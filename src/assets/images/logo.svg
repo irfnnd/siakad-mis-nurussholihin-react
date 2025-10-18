@@ -1,0 +1,31 @@
+<svg width="230" height="55" viewBox="0 0 250 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Elegant blue gradient background -->
+  <rect width="250" height="60" fill=""/>
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1565C0"/>
+      <stop offset="100%" stop-color="#1976D2"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Modern icon with cool accent colors -->
+  <path d="M5 15 L35 5 L65 15 L35 25 Z" fill="url(#iconGradient)"/>
+  <path d="M5 20 L5 50 L65 50 L65 20 L35 30 L5 20 Z" fill="#FFFFFF" fill-opacity="0.9"/>
+  <path d="M10 25 V 45 M 60 25 V 45" stroke="#1976D2" stroke-width="2"/>
+  
+  <defs>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4FC3F7"/>
+      <stop offset="100%" stop-color="#29B6F6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Text with elegant typography contrast -->
+  <text x="80" y="27" font-family="Verdana, sans-serif" font-size="20" font-weight="bold" fill="#FFFFFF">SIAKAD</text>
+  <text x="80" y="49" font-family="Verdana, sans-serif" font-size="12" fill="#E3F2FD" opacity="0.9">MIS NURUSH SHOLIHIN</text>
+  
+  <!-- Subtle decorative elements -->
+  <circle cx="220" cy="15" r="3" fill="#4FC3F7" opacity="0.7"/>
+  <circle cx="230" cy="25" r="2" fill="#4FC3F7" opacity="0.5"/>
+  <circle cx="215" cy="35" r="2.5" fill="#4FC3F7" opacity="0.6"/>
+</svg>
