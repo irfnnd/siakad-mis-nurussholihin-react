@@ -19,17 +19,9 @@ import MainCard from 'components/cards/MainCard';
 
 // assets
 import AccountCircleTwoToneIcon from '@mui/icons-material/AccountCircleTwoTone';
-import DraftsTwoToneIcon from '@mui/icons-material/DraftsTwoTone';
-import LockOpenTwoTone from '@mui/icons-material/LockOpenTwoTone';
 import MeetingRoomTwoToneIcon from '@mui/icons-material/MeetingRoomTwoTone';
-import PersonTwoToneIcon from '@mui/icons-material/PersonTwoTone';
-import SettingsTwoToneIcon from '@mui/icons-material/SettingsTwoTone';
 
 const menuItems = [
-  { icon: <SettingsTwoToneIcon />, label: 'Settings' },
-  { icon: <PersonTwoToneIcon />, label: 'Profile' },
-  { icon: <DraftsTwoToneIcon />, label: 'My Messages' },
-  { icon: <LockOpenTwoTone />, label: 'Lock Screen' },
   { icon: <MeetingRoomTwoToneIcon />, label: 'Logout' }
 ];
 

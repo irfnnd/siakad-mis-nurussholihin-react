@@ -202,6 +202,7 @@ const DataKelasCRUD = () => {
           <Grid item xs={11} flex={1} md={4}>
             <TextField
               fullWidth
+              size="small"
               placeholder="Cari kelas..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -293,48 +294,78 @@ const DataKelasCRUD = () => {
           </DialogActions>
         </Box>
       </Dialog>
-
-      {/* Dialog Detail */}
-      <Dialog open={openDetailDialog} onClose={handleCloseDialogs} fullWidth maxWidth="xs" TransitionComponent={Fade}>
-        <DialogTitle sx={{ bgcolor: 'info.main', color: 'white' }}>
-          Detail Kelas
-        </DialogTitle>
-        <DialogContent sx={{ pt: 3 }}>
-          {selectedKelasData && (
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Typography variant="h6" gutterBottom>{selectedKelasData.kodeKelas}</Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body2" color="text.secondary">Wali Kelas</Typography>
-                <Typography>{selectedKelasData.waliKelas}</Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body2" color="text.secondary">Tingkat</Typography>
-                <Typography>{selectedKelasData.tingkat}</Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body2" color="text.secondary">Jurusan</Typography>
-                <Typography>{selectedKelasData.jurusan}</Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body2" color="text.secondary">Jumlah Siswa</Typography>
-                <Typography>{selectedKelasData.jumlahSiswa}</Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Chip label={selectedKelasData.status} color={selectedKelasData.status === 'Aktif' ? 'success' : 'error'} />
-              </Grid>
-            </Grid>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialogs}>Tutup</Button>
-          <Button variant="contained" onClick={() => { handleCloseDialogs(); handleEdit(selectedKelasData); }}>
-            Edit
-          </Button>
-        </DialogActions>
+      {/* Dialog Detail Kelas */}
+      <Dialog 
+          open={openDetailDialog} 
+          onClose={handleCloseDialogs} 
+          fullWidth 
+          maxWidth="sm" 
+          TransitionComponent={Fade}
+      >
+          <DialogTitle sx={{ 
+              bgcolor: 'info.main', 
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+          }}>
+              <SchoolIcon />
+              Detail Kelas
+          </DialogTitle>
+          <DialogContent>
+              {selectedKelasData && (
+                  <Box sx={{ pt: 3 }}>
+                      {/* Bagian Header tanpa Avatar */}
+                      <Box sx={{ mb: 3, borderBottom: 1, borderColor: 'divider', pb: 2 }}>
+                          <Typography variant="h5" fontWeight="600">{selectedKelasData.kodeKelas}</Typography>
+                          <Typography variant="subtitle1" color="text.secondary">
+                              Tahun Ajaran: {selectedKelasData.tahunAjaran || 'N/A'}
+                          </Typography>
+                      </Box>
+                      
+                      {/* Bagian Informasi Detail */}
+                      <Grid container spacing={2}>
+                          <Grid item xs={12} sm={6}>
+                              <Typography variant="body2" color="text.secondary">Wali Kelas</Typography>
+                              <Typography fontWeight="500">{selectedKelasData.waliKelas}</Typography>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                              <Typography variant="body2" color="text.secondary">Jumlah Siswa</Typography>
+                              <Typography fontWeight="500">{selectedKelasData.jumlahSiswa} Siswa</Typography>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                              <Typography variant="body2" color="text.secondary">Tingkat</Typography>
+                              <Typography fontWeight="500">{selectedKelasData.tingkat}</Typography>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                              <Typography variant="body2" color="text.secondary">Jurusan</Typography>
+                              <Typography fontWeight="500">{selectedKelasData.jurusan}</Typography>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                              <Typography variant="body2" color="text.secondary">Status</Typography>
+                              <Chip 
+                                  label={selectedKelasData.status} 
+                                  size="small" 
+                                  color={selectedKelasData.status === 'Aktif' ? 'success' : 'error'} 
+                              />
+                          </Grid>
+                      </Grid>
+                  </Box>
+              )}
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+              <Button onClick={handleCloseDialogs} variant="outlined">Tutup</Button>
+              <Button 
+                  variant="contained" 
+                  onClick={() => { 
+                      handleCloseDialogs(); 
+                      handleEdit(selectedKelasData); 
+                  }}
+              >
+                  Edit
+              </Button>
+          </DialogActions>
       </Dialog>
-
       {/* Dialog Konfirmasi Hapus */}
       <Dialog open={openConfirmDialog} onClose={handleCloseDialogs} TransitionComponent={Fade}>
         <DialogTitle sx={{ color: 'error.main' }}>Konfirmasi Hapus</DialogTitle>

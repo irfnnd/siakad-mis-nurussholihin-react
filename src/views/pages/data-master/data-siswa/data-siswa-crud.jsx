@@ -333,6 +333,7 @@ const SiswaCRUD = () => {
             <Grid item xs={11} flex={1} md={4}>
               <TextField
                 fullWidth
+                size="small"
                 placeholder="Cari siswa..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -346,7 +347,7 @@ const SiswaCRUD = () => {
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth>
+              <FormControl fullWidth size="small">
                 <InputLabel>Filter Kelas</InputLabel>
                 <Select
                   value={selectedKelas}
@@ -364,7 +365,7 @@ const SiswaCRUD = () => {
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth>
+              <FormControl fullWidth size="small">
                 <InputLabel>Filter Status</InputLabel>
                 <Select
                   value={selectedStatus}
@@ -613,99 +614,90 @@ const SiswaCRUD = () => {
 
       {/* Dialog Detail Siswa */}
       <Dialog 
-        open={openDetailDialog} 
-        onClose={handleCloseDetail} 
-        fullWidth 
-        maxWidth="sm"
-        TransitionComponent={Fade}
+          open={openDetailDialog} 
+          onClose={handleCloseDetail} 
+          fullWidth 
+          maxWidth="sm"
+          TransitionComponent={Fade}
       >
-        <DialogTitle sx={{ 
-          bgcolor: 'info.main', 
-          color: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1
-        }}>
-          <VisibilityIcon />
-          Detail Siswa
-        </DialogTitle>
-        <DialogContent sx={{ pt: 3 }}>
-          {selectedStudent && (
-            <Grid container spacing={3}>
-              <Grid item xs={12} sx={{ textAlign: 'center' }}>
-                <Avatar sx={{ 
-                  width: 80, 
-                  height: 80, 
-                  mx: 'auto', 
-                  mb: 2, 
-                  bgcolor: 'primary.main',
-                  fontSize: '1.5rem'
-                }}>
-                  {selectedStudent.nama.split(' ').map(n => n[0]).join('')}
-                </Avatar>
-                <Typography variant="h5" gutterBottom>
-                  {selectedStudent.nama}
-                </Typography>
-                <Chip label={selectedStudent.kelas} color="primary" />
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">NIS</Typography>
-                <Typography variant="body1" fontWeight="medium">{selectedStudent.nis}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">NISN</Typography>
-                <Typography variant="body1" fontWeight="medium">{selectedStudent.nisn}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Jenis Kelamin</Typography>
-                <Typography variant="body1" fontWeight="medium">{selectedStudent.jenisKelamin}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Agama</Typography>
-                <Typography variant="body1" fontWeight="medium">{selectedStudent.agama}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Email</Typography>
-                <Typography variant="body1" fontWeight="medium">{selectedStudent.email}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Telepon</Typography>
-                <Typography variant="body1" fontWeight="medium">{selectedStudent.telepon}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Tanggal Lahir</Typography>
-                <Typography variant="body1" fontWeight="medium">
-                  {new Date(selectedStudent.tanggalLahir).toLocaleDateString('id-ID')}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Status</Typography>
-                <Chip 
-                  label={selectedStudent.status} 
-                  color={selectedStudent.status === 'Aktif' ? 'success' : 'error'} 
-                  size="small" 
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="body2" color="text.secondary">Alamat</Typography>
-                <Typography variant="body1" fontWeight="medium">{selectedStudent.alamat}</Typography>
-              </Grid>
-            </Grid>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button onClick={handleCloseDetail} variant="outlined">Tutup</Button>
-          <Button 
-            onClick={() => {
-              handleCloseDetail();
-              handleClickEdit(selectedStudent);
-            }} 
-            variant="contained"
-          >
-            Edit Data
-          </Button>
-        </DialogActions>
+          <DialogTitle sx={{ 
+              bgcolor: 'info.main', 
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+          }}>
+              <VisibilityIcon />
+              Detail Siswa
+          </DialogTitle>
+          <DialogContent>
+              {selectedStudent && (
+                  <Box sx={{ pt: 3 }}>
+                      {/* Bagian Header dengan Avatar dan Nama */}
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
+                          <Avatar sx={{ 
+                              width: 100, 
+                              height: 100, 
+                              mb: 2, 
+                              bgcolor: 'primary.main',
+                              fontSize: '2.5rem'
+                          }}>
+                              {selectedStudent.nama.split(' ').map(n => n[0]).join('')}
+                          </Avatar>
+                          <Typography variant="h5" fontWeight="600">{selectedStudent.nama}</Typography>
+                          <Chip label={`Kelas: ${selectedStudent.kelas}`} color="primary" sx={{ mt: 1 }} />
+                      </Box>
+                      
+                      {/* Bagian Informasi Detail */}
+                      <Grid container spacing={2}>
+                          <Grid item xs={12} sm={6}>
+                              <Typography variant="body2" color="text.secondary">NIS</Typography>
+                              <Typography fontWeight="500">{selectedStudent.nis}</Typography>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                              <Typography variant="body2" color="text.secondary">NISN</Typography>
+                              <Typography fontWeight="500">{selectedStudent.nisn}</Typography>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                              <Typography variant="body2" color="text.secondary">Jenis Kelamin</Typography>
+                              <Typography fontWeight="500">{selectedStudent.jenisKelamin}</Typography>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                              <Typography variant="body2" color="text.secondary">Status</Typography>
+                              <Chip 
+                                  label={selectedStudent.status} 
+                                  size="small" 
+                                  color={selectedStudent.status === 'Aktif' ? 'success' : 'error'} 
+                              />
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                              <Typography variant="body2" color="text.secondary">Email Orang Tua/Wali</Typography>
+                              <Typography fontWeight="500">{selectedStudent.email || '-'}</Typography>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                              <Typography variant="body2" color="text.secondary">Telepon Orang Tua/Wali</Typography>
+                              <Typography fontWeight="500">{selectedStudent.telepon || '-'}</Typography>
+                          </Grid>
+                          <Grid item xs={12}>
+                              <Typography variant="body2" color="text.secondary">Alamat</Typography>
+                              <Typography fontWeight="500">{selectedStudent.alamat}</Typography>
+                          </Grid>
+                      </Grid>
+                  </Box>
+              )}
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+              <Button onClick={handleCloseDetail} variant="outlined">Tutup</Button>
+              <Button 
+                  onClick={() => {
+                      handleCloseDetail();
+                      handleClickEdit(selectedStudent);
+                  }} 
+                  variant="contained"
+              >
+                  Edit Data
+              </Button>
+          </DialogActions>
       </Dialog>
 
       {/* Dialog Konfirmasi Hapus */}
