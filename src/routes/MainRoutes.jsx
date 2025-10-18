@@ -7,7 +7,6 @@ import MainLayout from 'layouts/MainLayout';
 // pages
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/default')));
 const SiswaCRUD = Loadable(lazy(() => import('views/pages/data-master/data-siswa/data-siswa-crud')));
-const GuruStafCRUD = Loadable(lazy(() => import('views/pages/data-master/data-guru-staf/data-guru-staff')));
 const DataKelas = Loadable(lazy(() => import('views/pages/kurikulum/data-kelas/data-kelas-crud')));
 const DataPegawai = Loadable(lazy(() => import('views/pages/data-master/data-pegawai/data-pegawai-crud')));
 
@@ -31,10 +30,6 @@ const MainRoutes = {
     {
       path: '/data/siswa',
       element: <SiswaCRUD />
-    },
-    {
-      path: '/data/guru-staf',
-      element: < GuruStafCRUD/>
     },
     {
       path: '/data/pegawai',
