@@ -78,12 +78,6 @@ const manajemenData = {
           url: '/data/siswa'
         },
         {
-          id: 'data-guru-staf',
-          title: 'Data Guru & Staf',
-          type: 'item',
-          url: '/data/guru-staf'
-        },
-        {
           id: 'data-pegawai',
           title: 'Data Pegawai',
           type: 'item',
@@ -151,7 +145,7 @@ const kurikulum = {
           id: 'mata-pelajaran',
           title: 'Mata Pelajaran',
           type: 'item',
-          url: '/kurikulum/mapel'
+          url: '/kurikulum/mata-pelajaran'
         },
         {
           id: 'jadwal-pelajaran',
