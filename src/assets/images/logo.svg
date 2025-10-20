@@ -1,31 +1,19 @@
-<svg width="230" height="55" viewBox="0 0 250 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Elegant blue gradient background -->
-  <rect width="250" height="60" fill=""/>
-  <defs>
-    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1565C0"/>
-      <stop offset="100%" stop-color="#1976D2"/>
-    </linearGradient>
-  </defs>
+<svg width="150" height="60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background rectangle for navbar feel -->
   
-  <!-- Modern icon with cool accent colors -->
-  <path d="M5 15 L35 5 L65 15 L35 25 Z" fill="url(#iconGradient)"/>
-  <path d="M5 20 L5 50 L65 50 L65 20 L35 30 L5 20 Z" fill="#FFFFFF" fill-opacity="0.9"/>
-  <path d="M10 25 V 45 M 60 25 V 45" stroke="#1976D2" stroke-width="2"/>
+  <!-- Icon: Simple book with crescent moon for Islamic school -->
+  <g transform="translate(10, 10)">
+    <!-- Book -->
+    <rect x="0" y="10" width="30" height="20" fill="#ffffff" rx="2"/>
+    <rect x="5" y="5" width="20" height="30" fill="#007bff" stroke="#ffffff" stroke-width="1" rx="1"/>
+    <line x1="10" y1="10" x2="20" y2="10" stroke="#ffffff" stroke-width="2"/>
+    <line x1="10" y1="15" x2="20" y2="15" stroke="#ffffff" stroke-width="2"/>
+    <line x1="10" y1="20" x2="20" y2="20" stroke="#ffffff" stroke-width="2"/>
+    <!-- Crescent moon -->
+    <path d="M 25 10 A 8 8 0 0 1 25 26 A 6 6 0 0 0 25 10 Z" fill="#28a745"/>
+  </g>
   
-  <defs>
-    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#4FC3F7"/>
-      <stop offset="100%" stop-color="#29B6F6"/>
-    </linearGradient>
-  </defs>
-
-  <!-- Text with elegant typography contrast -->
-  <text x="80" y="27" font-family="Verdana, sans-serif" font-size="20" font-weight="bold" fill="#FFFFFF">SIAKAD</text>
-  <text x="80" y="49" font-family="Verdana, sans-serif" font-size="12" fill="#E3F2FD" opacity="0.9">MIS NURUSH SHOLIHIN</text>
-  
-  <!-- Subtle decorative elements -->
-  <circle cx="220" cy="15" r="3" fill="#4FC3F7" opacity="0.7"/>
-  <circle cx="230" cy="25" r="2" fill="#4FC3F7" opacity="0.5"/>
-  <circle cx="215" cy="35" r="2.5" fill="#4FC3F7" opacity="0.6"/>
+  <!-- Text: SIAKAD Madrasah Ibtidaiyah Swasta Nurush Sholihin -->
+  <text x="50" y="25" font-family="Roboto, sans-serif" font-size="14" font-weight="bold" fill="#ffffff">SIAKAD</text>
+  <text x="50" y="40" font-family="Robot0, sans-serif" font-size="10" fill="#ffffff">MIS Nurush Sholihin</text>
 </svg>

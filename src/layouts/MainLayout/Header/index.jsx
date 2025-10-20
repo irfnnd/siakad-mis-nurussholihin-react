@@ -29,7 +29,7 @@ export default function Header() {
   const mainHeader = (
     <Toolbar>
       <Stack direction="row" sx={{ gap: 1, width: { xs: 1, md: DRAWER_WIDTH }, alignItems: 'center', justifyContent: 'space-between' }}>
-        <CardMedia component="img" image={logo} alt="logo" sx={{ width: 200, display: { xs: 'none', md: 'flex' } }} />
+        <CardMedia component="img" image={logo} alt="logo" sx={{ width: 170, display: { xs: 'none', md: 'flex' } }} />
         <IconButton
           edge="start"
           sx={{ mr: { xs: 0, sm: 1.25 }, color: 'background.paper' }}
