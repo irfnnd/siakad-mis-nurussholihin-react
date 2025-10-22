@@ -395,12 +395,6 @@ const SiswaCRUD = () => {
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               <Button 
                 variant="outlined" 
-                startIcon={<CloudUploadIcon />}
-              >
-                Import
-              </Button>
-              <Button 
-                variant="outlined" 
                 startIcon={<DownloadIcon />}
               >
                 Export

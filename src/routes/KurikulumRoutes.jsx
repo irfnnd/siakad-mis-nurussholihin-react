@@ -17,6 +17,7 @@ const KurikulumRoutes = {
 
     {
       path: 'data-kelas',
+      title: 'Data Kelas',
       element: <DataKelas />
     },
     {

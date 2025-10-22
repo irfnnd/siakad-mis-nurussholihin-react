@@ -1,19 +1,19 @@
-<svg width="150" height="60" xmlns="http://www.w3.org/2000/svg">
+<svg width="150" height="40" xmlns="http://www.w3.org/2000/svg" >
   <!-- Background rectangle for navbar feel -->
   
   <!-- Icon: Simple book with crescent moon for Islamic school -->
-  <g transform="translate(10, 10)">
+  <g transform="translate(10, 0)">
     <!-- Book -->
-    <rect x="0" y="10" width="30" height="20" fill="#ffffff" rx="2"/>
-    <rect x="5" y="5" width="20" height="30" fill="#007bff" stroke="#ffffff" stroke-width="1" rx="1"/>
-    <line x1="10" y1="10" x2="20" y2="10" stroke="#ffffff" stroke-width="2"/>
+    <rect x="0" y="10" width="30" height="20" fill="#ffffff" stroke="" rx="4"/>
+    <rect x="5" y="5" width="20" height="30" fill="#007bff" stroke="#ffffff" stroke-width="1" rx="4"/>
     <line x1="10" y1="15" x2="20" y2="15" stroke="#ffffff" stroke-width="2"/>
     <line x1="10" y1="20" x2="20" y2="20" stroke="#ffffff" stroke-width="2"/>
+    <line x1="10" y1="25" x2="20" y2="25" stroke="#ffffff" stroke-width="2"/>
     <!-- Crescent moon -->
     <path d="M 25 10 A 8 8 0 0 1 25 26 A 6 6 0 0 0 25 10 Z" fill="#28a745"/>
   </g>
   
   <!-- Text: SIAKAD Madrasah Ibtidaiyah Swasta Nurush Sholihin -->
-  <text x="50" y="25" font-family="Roboto, sans-serif" font-size="14" font-weight="bold" fill="#ffffff">SIAKAD</text>
-  <text x="50" y="40" font-family="Robot0, sans-serif" font-size="10" fill="#ffffff">MIS Nurush Sholihin</text>
+  <text x="50" y="17" font-family="Roboto, sans-serif" font-size="14" font-weight="bold" fill="#ffffff">SIAKAD</text>
+  <text x="50" y="30" font-family="Robot0, sans-serif" font-size="10" fill="#ffffff">MIS Nurush Sholihin</text>
 </svg>

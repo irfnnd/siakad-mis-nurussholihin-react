@@ -158,37 +158,6 @@ const kurikulum = {
   ]
 };
 
-// Manajemen User
-const manajemenUser = {
-  id: 'manajemen-user',
-  title: 'Manajemen User',
-  type: 'group',
-  children: [
-    {
-      id: 'user-management',
-      title: 'User & Role',
-      type: 'collapse',
-      icon: icons.IconUser,
-      children: [
-        {
-          id: 'data-user',
-          title: 'Daftar User',
-          type: 'item',
-          url: '/user/list',
-          icon: icons.IconUserAdd
-        },
-        {
-          id: 'role-permission',
-          title: 'Role & Permission',
-          type: 'item',
-          url: '/user/roles',
-          icon: icons.IconSecurity
-        }
-      ]
-    }
-  ]
-};
-
 // Publikasi
 const publikasi = {
   id: 'publikasi',
@@ -212,9 +181,25 @@ const publikasi = {
   ]
 };
 
+// Manajemen User
+const manajemenUser = {
+  id: 'manajemen-user',
+  title: 'Manajemen User',
+  type: 'group',
+  children: [
+    {
+          id: 'data-user',
+          title: 'Data User',
+          type: 'item',
+          url: '/data-user',
+          icon: icons.IconUserAdd
+    }
+  ]
+};
+
 // ==============================|| EKSPOR MENU UTAMA ||============================== //
 const menuItems = {
-  items: [dashboard, manajemenData, akademik, kurikulum, manajemenUser, publikasi]
+  items: [dashboard, manajemenData, akademik, kurikulum, publikasi, manajemenUser]
 };
 
 export default menuItems;
