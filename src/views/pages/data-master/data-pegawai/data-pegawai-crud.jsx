@@ -261,7 +261,7 @@ const PegawaiCRUD = () => {
     <Box sx={{ p: 3, bgcolor: 'grey.50' }}>
       <Card sx={{ mb: 3, p: 2 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={11} flex={1} md={4}>
+          <Grid flex={1} >
             <TextField
               fullWidth
               size="small"

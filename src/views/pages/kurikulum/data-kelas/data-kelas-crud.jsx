@@ -196,44 +196,34 @@ const DataKelasCRUD = () => {
   ];
 
   return (
-    <Box sx={{ p: 3, bgcolor: 'grey.50', minHeight: '100vh' }}>
+    <Box sx={{ p: 3, bgcolor: 'grey.50'}}>
       <Card sx={{ p: 2, mb: 3 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={11} flex={1} md={4}>
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="Cari kelas..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                )
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<FilterListIcon />}
-              onClick={handleResetFilter}
-            >
-              Reset
-            </Button>
-          </Grid>
-          <Grid item xs={12} md={2} sx={{ display: 'flex', gap: 1 }}>
-            <Button variant="outlined" startIcon={<DownloadIcon />}>
-              Export
-            </Button>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={handleAdd}>
-              Tambah Kelas
-            </Button>
-          </Grid>
+        <Grid container spacing={2} alignItems="center" justifyContent="space-between">
+        {/* Item untuk TextField di sebelah kiri */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Cari kelas..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              )
+            }}
+          />
         </Grid>
+
+        {/* Item untuk Button di sebelah kanan */}
+        <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+          <Button variant="contained" fullWidth startIcon={<AddIcon />} onClick={handleAdd}>
+            Tambah Kelas
+          </Button>
+        </Grid>
+      </Grid>
       </Card>
 
       <Card sx={{ p: 2 }}>

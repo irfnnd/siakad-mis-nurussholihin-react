@@ -322,7 +322,7 @@ const SiswaCRUD = () => {
   ];
 
   return (
-    <Box sx={{ flexGrow: 1, p: 3, bgcolor: 'grey.50', minHeight: '100vh' }}>
+    <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: 3 }}>
       {/* Konten Data Siswa */}
       <Box>
         {/* Header dengan Actions */}
@@ -330,7 +330,7 @@ const SiswaCRUD = () => {
         {/* Filter dan Pencarian */}
         <Card sx={{ mb: 3, p: 2 }}>
           <Grid container spacing={2} alignItems="center">
-            <Grid item xs={11} flex={1} md={4}>
+            <Grid item xs={12} flex={1} md={4}>
               <TextField
                 fullWidth
                 size="small"
@@ -346,7 +346,7 @@ const SiswaCRUD = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 1.5 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>Filter Kelas</InputLabel>
                 <Select
@@ -364,7 +364,7 @@ const SiswaCRUD = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 1.6 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>Filter Status</InputLabel>
                 <Select
@@ -378,7 +378,7 @@ const SiswaCRUD = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} md={2}>
+            <Grid size={{ xs: 6, sm: 6, md: 1.5 }}>
               <Button 
                 fullWidth 
                 variant="outlined" 
@@ -392,28 +392,32 @@ const SiswaCRUD = () => {
                 Reset
               </Button>
             </Grid>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Grid size={{ xs: 6, sm: 6, md: 1.5 }}>
               <Button 
+                fullWidth
                 variant="outlined" 
                 startIcon={<DownloadIcon />}
               >
                 Export
               </Button>
+
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
               <Button 
+                fullWidth
                 variant="contained" 
                 startIcon={<AddIcon />} 
                 onClick={handleClickAdd}
               >
                 Tambah Siswa
               </Button>
-            </Box>
+            </Grid>
           </Grid>
         </Card>
 
         {/* Tabel Data */}
         <Card sx={{p:2}}>
-
-            <Box sx={{ width: '100%' }}>
+            <Paper sx={{ width: '100%' }}>
               <DataGrid
                 rows={filteredStudents}
                 columns={columns}
@@ -432,8 +436,7 @@ const SiswaCRUD = () => {
                   }
                 }}
               />
-            </Box>
-
+            </Paper>
         </Card>
       </Box>
 
@@ -441,7 +444,6 @@ const SiswaCRUD = () => {
       <Dialog 
         open={openFormDialog} 
         onClose={handleCloseForm} 
-        fullWidth 
         maxWidth="md"
         TransitionComponent={Fade}
       >
@@ -457,145 +459,194 @@ const SiswaCRUD = () => {
         </DialogTitle>
         <Box component="form" onSubmit={handleFormSubmit}>
           <DialogContent sx={{ pt: 3 }}>
-            <Grid container spacing={3}>
-              <Grid size={3}>
-                <TextField 
-                  name="nis" 
-                  label="NIS" 
-                  defaultValue={selectedStudent?.nis || ''} 
-                  fullWidth 
-                  required 
-                  disabled={isEditMode}
-                />
-              </Grid>
-              <Grid size={3}>
-                <TextField 
-                  name="nisn" 
-                  label="NISN" 
-                  defaultValue={selectedStudent?.nisn || ''} 
-                  fullWidth 
-                  required 
-                />
-              </Grid>
-              <Grid size={6}>
-                <TextField 
-                  name="nama" 
-                  label="Nama Lengkap" 
-                  defaultValue={selectedStudent?.nama || ''} 
-                  fullWidth 
-                  required 
-                />
-              </Grid>
-              <Grid size={5}>
-                <FormControl fullWidth required>
-                  <InputLabel>Kelas</InputLabel>
-                  <Select name="kelas" label="Kelas" defaultValue={selectedStudent?.kelas || ''}>
-                    <MenuItem value="10A">10A</MenuItem>
-                    <MenuItem value="10B">10B</MenuItem>
-                    <MenuItem value="11A">11A</MenuItem>
-                    <MenuItem value="11B">11B</MenuItem>
-                    <MenuItem value="12A">12A</MenuItem>
-                    <MenuItem value="12B">12B</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid size={5}>
-                <FormControl fullWidth required>
-                  <InputLabel>Jenis Kelamin</InputLabel>
-                  <Select name="jenisKelamin" label="Jenis Kelamin" defaultValue={selectedStudent?.jenisKelamin || ''}>
-                    <MenuItem value="Laki-laki">Laki-laki</MenuItem>
-                    <MenuItem value="Perempuan">Perempuan</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField 
-                  name="email" 
-                  label="Email" 
-                  type="email"
-                  defaultValue={selectedStudent?.email || ''} 
-                  fullWidth 
-                  required
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <EmailIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField 
-                  name="telepon" 
-                  label="Telepon" 
-                  defaultValue={selectedStudent?.telepon || ''} 
-                  fullWidth 
-                  required
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <PhoneIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField 
-                  name="tanggalLahir" 
-                  label="Tanggal Lahir" 
-                  type="date"
-                  defaultValue={selectedStudent?.tanggalLahir || ''} 
-                  fullWidth 
-                  required
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Agama</InputLabel>
-                  <Select name="agama" label="Agama" defaultValue={selectedStudent?.agama || ''}>
-                    <MenuItem value="Islam">Islam</MenuItem>
-                    <MenuItem value="Kristen">Kristen</MenuItem>
-                    <MenuItem value="Katolik">Katolik</MenuItem>
-                    <MenuItem value="Hindu">Hindu</MenuItem>
-                    <MenuItem value="Buddha">Buddha</MenuItem>
-                    <MenuItem value="Konghucu">Konghucu</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField 
-                  name="tanggalMasuk" 
-                  label="Tanggal Masuk" 
-                  type="date"
-                  defaultValue={selectedStudent?.tanggalMasuk || ''} 
-                  fullWidth 
-                  required
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Status</InputLabel>
-                  <Select name="status" label="Status" defaultValue={selectedStudent?.status || 'Aktif'}>
-                    <MenuItem value="Aktif">Aktif</MenuItem>
-                    <MenuItem value="Nonaktif">Nonaktif</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField 
-                  name="alamat" 
-                  label="Alamat Lengkap" 
-                  defaultValue={selectedStudent?.alamat || ''} 
-                  fullWidth 
-                  multiline 
-                  rows={3} 
-                />
-              </Grid>
-            </Grid>
+            <Grid container spacing={2}>
+        {/* NIS */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField
+            name="nis"
+            label="NIS"
+            defaultValue={selectedStudent?.nis || ''}
+            fullWidth
+            required
+            disabled={isEditMode}
+            size="small"
+          />
+        </Grid>
+
+        {/* NISN */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField
+            name="nisn"
+            label="NISN"
+            defaultValue={selectedStudent?.nisn || ''}
+            fullWidth
+            required
+            size="small"
+          />
+        </Grid>
+
+        {/* Nama Lengkap */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField
+            name="nama"
+            label="Nama Lengkap"
+            defaultValue={selectedStudent?.nama || ''}
+            fullWidth
+            required
+            size="small"
+          />
+        </Grid>
+
+        {/* Kelas */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <FormControl fullWidth required size="small">
+            <InputLabel>Kelas</InputLabel>
+            <Select
+              name="kelas"
+              label="Kelas"
+              defaultValue={selectedStudent?.kelas || ''}
+            >
+              <MenuItem value="10A">10A</MenuItem>
+              <MenuItem value="10B">10B</MenuItem>
+              <MenuItem value="11A">11A</MenuItem>
+              <MenuItem value="11B">11B</MenuItem>
+              <MenuItem value="12A">12A</MenuItem>
+              <MenuItem value="12B">12B</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+
+        {/* Jenis Kelamin */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <FormControl fullWidth required size="small">
+            <InputLabel>Jenis Kelamin</InputLabel>
+            <Select
+              size='small'
+              name="jenisKelamin"
+              label="Jenis Kelamin"
+              defaultValue={selectedStudent?.jenisKelamin || ''}
+            >
+              <MenuItem value="Laki-laki">Laki-laki</MenuItem>
+              <MenuItem value="Perempuan">Perempuan</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+
+        {/* Email */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField
+            name="email"
+            label="Email"
+            type="email"
+            defaultValue={selectedStudent?.email || ''}
+            fullWidth
+            required
+            size="small"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <EmailIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Grid>
+
+        {/* Telepon */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField
+            name="telepon"
+            label="Telepon"
+            defaultValue={selectedStudent?.telepon || ''}
+            fullWidth
+            required
+            size="small"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <PhoneIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Grid>
+
+        {/* Tanggal Lahir */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField
+            name="tanggalLahir"
+            label="Tanggal Lahir"
+            type="date"
+            defaultValue={selectedStudent?.tanggalLahir || ''}
+            fullWidth
+            required
+            size="small"
+            InputLabelProps={{ shrink: true }}
+          />
+        </Grid>
+
+        {/* Agama */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <FormControl fullWidth required size="small">
+            <InputLabel>Agama</InputLabel>
+            <Select
+              name="agama"
+              label="Agama"
+              defaultValue={selectedStudent?.agama || ''}
+            >
+              <MenuItem value="Islam">Islam</MenuItem>
+              <MenuItem value="Kristen">Kristen</MenuItem>
+              <MenuItem value="Katolik">Katolik</MenuItem>
+              <MenuItem value="Hindu">Hindu</MenuItem>
+              <MenuItem value="Buddha">Buddha</MenuItem>
+              <MenuItem value="Konghucu">Konghucu</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+
+        {/* Tanggal Masuk */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField
+            name="tanggalMasuk"
+            label="Tanggal Masuk"
+            type="date"
+            defaultValue={selectedStudent?.tanggalMasuk || ''}
+            fullWidth
+            required
+            size="small"
+            InputLabelProps={{ shrink: true }}
+          />
+        </Grid>
+
+        {/* Status */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <FormControl fullWidth required size="small">
+            <InputLabel>Status</InputLabel>
+            <Select
+              name="status"
+              label="Status"
+              defaultValue={selectedStudent?.status || 'Aktif'}
+            >
+              <MenuItem value="Aktif">Aktif</MenuItem>
+              <MenuItem value="Nonaktif">Nonaktif</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+
+        {/* Alamat */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField
+            name="alamat"
+            label="Alamat Lengkap"
+            defaultValue={selectedStudent?.alamat || ''}
+            fullWidth
+            multiline
+            rows={3}
+            size="small"
+          />
+        </Grid>
+      </Grid>
+
           </DialogContent>
           <DialogActions sx={{ p: 3 }}>
             <Button onClick={handleCloseForm} variant="outlined">Batal</Button>
