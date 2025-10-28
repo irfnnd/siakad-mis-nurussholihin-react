@@ -261,7 +261,7 @@ const PegawaiCRUD = () => {
     <Box sx={{ p: 3, bgcolor: 'grey.50' }}>
       <Card sx={{ mb: 3, p: 2 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid flex={1} >
+          <Grid size={{ xs: 12, md: 4.2 }} >
             <TextField
               fullWidth
               size="small"
@@ -277,7 +277,7 @@ const PegawaiCRUD = () => {
               }}
             />
           </Grid>
-          <Grid item xs={6} md={3}>
+          <Grid size={{ xs: 6, md: 1.9 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Filter Jabatan</InputLabel>
               <Select value={selectedJabatan} label="Filter Jabatan" onChange={(e) => setSelectedJabatan(e.target.value)}>
@@ -288,7 +288,7 @@ const PegawaiCRUD = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={6} md={3}>
+          <Grid size={{ xs: 6, md: 1.9 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Filter Status</InputLabel>
               <Select value={selectedStatus} label="Filter Status" onChange={(e) => setSelectedStatus(e.target.value)}>
@@ -299,10 +299,11 @@ const PegawaiCRUD = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid size={{xs: 3, md: 1.3}}>
             <Button
               fullWidth
               variant="outlined"
+              startIcon={<FilterListIcon />}
               onClick={() => {
                 setSearchTerm('');
                 setSelectedJabatan('Semua');
@@ -312,12 +313,12 @@ const PegawaiCRUD = () => {
               Reset
             </Button>
           </Grid>
-          <Grid item xs={12} md={2} sx={{ display: 'flex', gap: 1 }}>
-            <Button variant="outlined" startIcon={<DownloadIcon />}>
+          <Grid size={{ xs: 9, md: 2.7 }} sx={{ display: 'flex', gap: 2 }}>
+            <Button fullWidth variant="outlined" startIcon={<DownloadIcon />}>
               Export
             </Button>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={handleClickAdd}>
-              Tambah Pegawai
+            <Button fullWidth variant="contained" startIcon={<AddIcon />} onClick={handleClickAdd}>
+              Tambah
             </Button>
           </Grid>
         </Grid>

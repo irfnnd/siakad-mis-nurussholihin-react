@@ -172,8 +172,9 @@ const MapelCRUD_SD = () => {
             justifyContent="space-between"
         >
             {/* Bagian kiri: Pencarian & Filter */}
-            <Grid item sx={{ display: 'flex', gap: 2, flexGrow: 1 }}>
+            <Grid fullWidth size={{xs: 12, sm: 6, md:8}}>
             <TextField
+                fullWidth
                 size="small"
                 placeholder="Cari berdasarkan nama atau kode..."
                 value={searchTerm}
@@ -185,12 +186,13 @@ const MapelCRUD_SD = () => {
                     </InputAdornment>
                 ),
                 }}
-                sx={{ width: '40%' }}
             />
-
-            <FormControl size="small" sx={{ width: '25%' }}>
+            </Grid>
+            <Grid size={{ xs: 7, sm: 6, md: 2 }}>
+            <FormControl fullWidth size="small">
                 <InputLabel>Filter Kelompok</InputLabel>
                 <Select
+                fullWidth
                 value={selectedKelompok}
                 label="Filter Kelompok"
                 onChange={(e) => setSelectedKelompok(e.target.value)}
@@ -204,8 +206,9 @@ const MapelCRUD_SD = () => {
             </Grid>
 
             {/* Bagian kanan: Tombol Tambah */}
-            <Grid item>
+            <Grid size={{ xs: 5, sm: 6, md: 2 }} fullWidth>
             <Button
+                fullWidth
                 variant="contained"
                 startIcon={<AddIcon />}
                 onClick={handleClickAdd}

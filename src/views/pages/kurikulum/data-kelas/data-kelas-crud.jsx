@@ -200,7 +200,7 @@ const DataKelasCRUD = () => {
       <Card sx={{ p: 2, mb: 3 }}>
         <Grid container spacing={2} alignItems="center" justifyContent="space-between">
         {/* Item untuk TextField di sebelah kiri */}
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 5 }}>
           <TextField
             fullWidth
             size="small"
@@ -218,7 +218,7 @@ const DataKelasCRUD = () => {
         </Grid>
 
         {/* Item untuk Button di sebelah kanan */}
-        <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Button variant="contained" fullWidth startIcon={<AddIcon />} onClick={handleAdd}>
             Tambah Kelas
           </Button>
@@ -250,22 +250,22 @@ const DataKelasCRUD = () => {
         <Box component="form" onSubmit={handleFormSubmit}>
           <DialogContent sx={{ pt: 3 }}>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <TextField name="kodeKelas" label="Kode Kelas" defaultValue={selectedKelasData?.kodeKelas || ''} fullWidth required />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <TextField name="waliKelas" label="Wali Kelas" defaultValue={selectedKelasData?.waliKelas || ''} fullWidth required />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <TextField name="tingkat" label="Tingkat (X/XI/XII)" defaultValue={selectedKelasData?.tingkat || ''} fullWidth required />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <TextField name="jurusan" label="Jurusan" defaultValue={selectedKelasData?.jurusan || ''} fullWidth required />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 6, sm: 6, md: 4 }}>
                 <TextField name="jumlahSiswa" label="Jumlah Siswa" type="number" defaultValue={selectedKelasData?.jumlahSiswa || ''} fullWidth required />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 6, sm: 6, md: 4 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Status</InputLabel>
                   <Select name="status" label="Status" defaultValue={selectedKelasData?.status || 'Aktif'}>
