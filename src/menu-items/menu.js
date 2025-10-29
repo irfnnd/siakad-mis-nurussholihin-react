@@ -151,7 +151,7 @@ const kurikulum = {
           id: 'jadwal-pelajaran',
           title: 'Jadwal Pelajaran',
           type: 'item',
-          url: '/kurikulum/jadwal'
+          url: '/kurikulum/jadwal-pelajaran'
         }
       ]
     }

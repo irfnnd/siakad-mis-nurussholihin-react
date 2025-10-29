@@ -163,11 +163,11 @@ const MapelCRUD_SD = () => {
   ];
 
   return (
-    <Box sx={{ p: 3, bgcolor: 'grey.50' }}>
-      <Card sx={{ mb: 3, p: 2 }}>
+    <Box sx={{ p: { xs: 1, sm: 1.5, md: 2 }, bgcolor: 'grey.50' }}>
+      <Card sx={{ mb:{ xs: 1, sm: 1.5, md: 3 }, p: { xs: 1, sm: 1.5, md: 2 } }}>
         <Grid
             container
-            spacing={2}
+            spacing={{ xs: 1, sm: 1.5, md: 2 }}
             alignItems="center"
             justifyContent="space-between"
         >
@@ -220,7 +220,7 @@ const MapelCRUD_SD = () => {
         </Card>
 
 
-      <Card sx={{ p: 2 }}>
+      <Card sx={{ p: { xs: 1, sm: 1.5, md: 2 }}}>
         <Box sx={{width: '100%' }}>
           <DataGrid
             rows={filteredMapel}
@@ -245,7 +245,7 @@ const MapelCRUD_SD = () => {
               <Grid item xs={12} sm={6}>
                 <TextField name="nama_mapel" label="Nama Mata Pelajaran" defaultValue={selectedMapel?.nama_mapel || ''} fullWidth required />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Kelompok Mata Pelajaran</InputLabel>
                   <Select name="kelompok" label="Kelompok Mata Pelajaran" defaultValue={selectedMapel?.kelompok || ''}>
@@ -258,7 +258,7 @@ const MapelCRUD_SD = () => {
               <Grid item xs={12} sm={6}>
                 <TextField name="kkm" label="KKM (Nilai Minimum)" type="number" defaultValue={selectedMapel?.kkm || ''} fullWidth required />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Status</InputLabel>
                   <Select name="status" label="Status" defaultValue={selectedMapel?.status || 'Aktif'}>

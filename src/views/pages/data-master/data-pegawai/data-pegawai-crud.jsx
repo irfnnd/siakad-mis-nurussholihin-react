@@ -258,9 +258,9 @@ const PegawaiCRUD = () => {
   ];
 
   return (
-    <Box sx={{ p: 3, bgcolor: 'grey.50' }}>
-      <Card sx={{ mb: 3, p: 2 }}>
-        <Grid container spacing={2} alignItems="center">
+    <Box sx={{ p: { xs: 1, sm: 2, md: 3 }, bgcolor: 'grey.50' }}>
+      <Card sx={{ mb:{ xs: 1, sm: 1.5, md: 3 }, p: 2 }}>
+        <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }} alignItems="center">
           <Grid size={{ xs: 12, md: 4.2 }} >
             <TextField
               fullWidth
@@ -277,7 +277,7 @@ const PegawaiCRUD = () => {
               }}
             />
           </Grid>
-          <Grid size={{ xs: 6, md: 1.9 }}>
+          <Grid size={{ xs: 6, md: 1.7 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Filter Jabatan</InputLabel>
               <Select value={selectedJabatan} label="Filter Jabatan" onChange={(e) => setSelectedJabatan(e.target.value)}>
@@ -288,7 +288,7 @@ const PegawaiCRUD = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid size={{ xs: 6, md: 1.9 }}>
+          <Grid size={{ xs: 6, md: 1.7 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Filter Status</InputLabel>
               <Select value={selectedStatus} label="Filter Status" onChange={(e) => setSelectedStatus(e.target.value)}>
@@ -299,7 +299,7 @@ const PegawaiCRUD = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid size={{xs: 3, md: 1.3}}>
+          <Grid size={{xs: 6, md: 1.3}}>
             <Button
               fullWidth
               variant="outlined"
@@ -313,10 +313,12 @@ const PegawaiCRUD = () => {
               Reset
             </Button>
           </Grid>
-          <Grid size={{ xs: 9, md: 2.7 }} sx={{ display: 'flex', gap: 2 }}>
+          <Grid fullWidth size={{ xs: 6, md: 1.5 }}>
             <Button fullWidth variant="outlined" startIcon={<DownloadIcon />}>
               Export
             </Button>
+          </Grid>
+          <Grid size={{ xs: 12, md: 1.5 }} >
             <Button fullWidth variant="contained" startIcon={<AddIcon />} onClick={handleClickAdd}>
               Tambah
             </Button>
@@ -324,7 +326,7 @@ const PegawaiCRUD = () => {
         </Grid>
       </Card>
 
-      <Card sx={{ p: 2 }}>
+      <Card sx={{ p:{ xs: 1, sm: 2, md: 3} }}>
         <Box sx={{ width: '100%' }}>
           <DataGrid
             rows={filteredPegawai}
@@ -359,7 +361,7 @@ const PegawaiCRUD = () => {
               <Grid item xs={12} sm={6}>
                 <TextField name="jabatan" label="Jabatan" defaultValue={selectedPegawai?.jabatan || ''} fullWidth required />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Jenis Kelamin</InputLabel>
                   <Select name="jenisKelamin" label="Jenis Kelamin" defaultValue={selectedPegawai?.jenisKelamin || ''}>
@@ -368,7 +370,7 @@ const PegawaiCRUD = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   name="tanggalLahir"
                   label="Tanggal Lahir"
@@ -379,7 +381,7 @@ const PegawaiCRUD = () => {
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Agama</InputLabel>
                   <Select name="agama" label="Agama" defaultValue={selectedPegawai?.agama || ''}>
@@ -397,7 +399,7 @@ const PegawaiCRUD = () => {
               <Grid item xs={12} sm={6}>
                 <TextField name="telepon" label="Telepon" defaultValue={selectedPegawai?.telepon || ''} fullWidth required />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 7, md: 6 }}>
                 <TextField
                   name="tanggalMasuk"
                   label="Tanggal Masuk"
@@ -408,7 +410,7 @@ const PegawaiCRUD = () => {
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 5, md: 6 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Status</InputLabel>
                   <Select name="status" label="Status" defaultValue={selectedPegawai?.status || 'Aktif'}>

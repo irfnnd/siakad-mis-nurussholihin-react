@@ -196,9 +196,9 @@ const DataKelasCRUD = () => {
   ];
 
   return (
-    <Box sx={{ p: 3, bgcolor: 'grey.50'}}>
-      <Card sx={{ p: 2, mb: 3 }}>
-        <Grid container spacing={2} alignItems="center" justifyContent="space-between">
+    <Box sx={{ p: { xs: 1, sm: 1.5, md: 2 }, bgcolor: 'grey.50'}}>
+      <Card sx={{ p: { xs: 1, sm: 1.5, md: 2 }, mb:{ xs: 1, sm: 1.5, md: 3 } }}>
+        <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }} alignItems="center" justifyContent="space-between">
         {/* Item untuk TextField di sebelah kiri */}
         <Grid size={{ xs: 12, sm: 6, md: 5 }}>
           <TextField
@@ -220,13 +220,14 @@ const DataKelasCRUD = () => {
         {/* Item untuk Button di sebelah kanan */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Button variant="contained" fullWidth startIcon={<AddIcon />} onClick={handleAdd}>
-            Tambah Kelas
+            Tambah
           </Button>
         </Grid>
       </Grid>
       </Card>
 
-      <Card sx={{ p: 2 }}>
+      <Card sx={{ p: { xs: 1, sm: 1.5, md: 2 }}}>
+        <Box sx={{width: '100%'}}>
         <DataGrid
           rows={filteredKelas}
           columns={columns}
@@ -240,6 +241,7 @@ const DataKelasCRUD = () => {
             },
           }}
         />
+        </Box>
       </Card>
 
       {/* Dialog Form */}

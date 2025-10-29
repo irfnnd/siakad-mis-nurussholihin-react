@@ -322,15 +322,15 @@ const SiswaCRUD = () => {
   ];
 
   return (
-    <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: 3 }}>
+    <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 3 } }}>
       {/* Konten Data Siswa */}
       <Box>
         {/* Header dengan Actions */}
 
         {/* Filter dan Pencarian */}
-        <Card sx={{ mb: 3, p: 2 }}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} flex={1} md={4}>
+        <Card sx={{ mb:{ xs: 1, sm: 1.5, md: 3 }, p: { xs: 1, sm: 1.5, md: 2 }}}>
+          <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }} alignItems="center">
+            <Grid size={{ xs: 12, sm: 6, md: 4.6 }}>
               <TextField
                 fullWidth
                 size="small"
@@ -346,7 +346,7 @@ const SiswaCRUD = () => {
                 }}
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 1.5 }}>
+            <Grid size={{ xs: 6, sm: 6, md: 1.5 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>Filter Kelas</InputLabel>
                 <Select
@@ -364,7 +364,7 @@ const SiswaCRUD = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 1.6 }}>
+            <Grid size={{ xs: 6, sm: 6, md: 1.6 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>Filter Status</InputLabel>
                 <Select
@@ -378,7 +378,7 @@ const SiswaCRUD = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid size={{ xs: 6, sm: 6, md: 1.5 }}>
+            <Grid size={{ xs: 6, sm: 6, md: 1.2 }}>
               <Button 
                 fullWidth 
                 variant="outlined" 
@@ -392,7 +392,7 @@ const SiswaCRUD = () => {
                 Reset
               </Button>
             </Grid>
-            <Grid size={{ xs: 6, sm: 6, md: 1.5 }}>
+            <Grid size={{ xs: 6, sm: 6, md: 1.2 }}>
               <Button 
                 fullWidth
                 variant="outlined" 
@@ -402,22 +402,22 @@ const SiswaCRUD = () => {
               </Button>
 
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 1.8 }}>
               <Button 
                 fullWidth
                 variant="contained" 
                 startIcon={<AddIcon />} 
                 onClick={handleClickAdd}
               >
-                Tambah Siswa
+                Tambah
               </Button>
             </Grid>
           </Grid>
         </Card>
 
         {/* Tabel Data */}
-        <Card sx={{p:2}}>
-            <Paper sx={{ width: '100%' }}>
+        <Card sx={{ p: { xs: 1, sm: 1.5, md: 2 }}}>
+            <Box sx={{ width: '100%' }}>
               <DataGrid
                 rows={filteredStudents}
                 columns={columns}
@@ -436,7 +436,7 @@ const SiswaCRUD = () => {
                   }
                 }}
               />
-            </Paper>
+            </Box>
         </Card>
       </Box>
 
