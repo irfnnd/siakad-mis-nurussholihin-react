@@ -197,8 +197,8 @@ const DataKelasCRUD = () => {
 
   return (
     <Box sx={{ p: { xs: 1, sm: 1.5, md: 2 }, bgcolor: 'grey.50'}}>
-      <Card sx={{ p: { xs: 1, sm: 1.5, md: 2 }, mb:{ xs: 1, sm: 1.5, md: 3 } }}>
-        <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }} alignItems="center" justifyContent="space-between">
+      <Card sx={{ p: { xs: 1.5, sm: 1.5, md: 2 }, mb:{ xs: 1, sm: 1.5, md: 3 } }}>
+        <Grid container spacing={{ xs: 1.5, sm: 1.5, md: 2 }} alignItems="center" justifyContent="space-between">
         {/* Item untuk TextField di sebelah kiri */}
         <Grid size={{ xs: 12, sm: 6, md: 5 }}>
           <TextField

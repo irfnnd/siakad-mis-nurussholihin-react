@@ -236,7 +236,7 @@ const HalamanNilaiSiswa = () => {
   return (
     <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 3 } }}>
       {/* FILTER */}
-      <Card sx={{ mb: 1, p: { xs: 1.5, sm: 1.5, md: 2 } }}>
+      <Card sx={{ mb: 1, p: 2 }}>
         <Grid container spacing={{xs: 1.5, sm: 1.5, md: 2}} alignItems="center">
           <Grid size={{ xs: 6, sm: 3, md: 1.5 }}>
             <FormControl fullWidth size="small">
@@ -257,7 +257,7 @@ const HalamanNilaiSiswa = () => {
             </FormControl>
           </Grid>
 
-          <Grid size={{ xs: 6, sm: 3, md: 1.5 }}>
+          <Grid size={{ xs: 4, sm: 3, md: 1.5 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Kelas</InputLabel>
               <Select value={selectedKelas} onChange={(e) => setSelectedKelas(e.target.value)} label="Kelas">
@@ -267,7 +267,7 @@ const HalamanNilaiSiswa = () => {
             </FormControl>
           </Grid>
 
-          <Grid size={{ xs: 6, sm: 3, md: 1.5 }}>
+          <Grid size={{ xs: 8, sm: 3, md: 1.5 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Mata Pelajaran</InputLabel>
               <Select value={selectedMapel} onChange={(e) => setSelectedMapel(e.target.value)} label="Mata Pelajaran">

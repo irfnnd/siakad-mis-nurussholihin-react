@@ -258,9 +258,9 @@ const PegawaiCRUD = () => {
   ];
 
   return (
-    <Box sx={{ p: { xs: 1, sm: 2, md: 3 }, bgcolor: 'grey.50' }}>
-      <Card sx={{ mb:{ xs: 1, sm: 1.5, md: 3 }, p: 2 }}>
-        <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }} alignItems="center">
+    <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 }, bgcolor: 'grey.50' }}>
+      <Card sx={{ mb:{ xs: 1, sm: 1.5, md: 3 }, p: { xs: 1.5, sm: 2, md: 3 } }}>
+        <Grid container spacing={{ xs: 1.5, sm: 1.5, md: 2 }} alignItems="center">
           <Grid size={{ xs: 12, md: 4.2 }} >
             <TextField
               fullWidth

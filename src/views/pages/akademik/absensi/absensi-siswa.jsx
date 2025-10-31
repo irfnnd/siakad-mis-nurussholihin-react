@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Grid,
@@ -16,42 +16,42 @@ import {
   TextField,
   ToggleButtonGroup,
   ToggleButton,
-  DialogActions,
-} from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import PageviewIcon from "@mui/icons-material/Pageview";
-import SaveIcon from "@mui/icons-material/Save";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+  DialogActions
+} from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
+import PageviewIcon from '@mui/icons-material/Pageview';
+import SaveIcon from '@mui/icons-material/Save';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 // === Helper ===
 const getTodayDate = () => {
   const today = new Date();
   const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, "0");
-  const dd = String(today.getDate()).padStart(2, "0");
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
   return `${yyyy}-${mm}-${dd}`;
 };
 
 // === Mock Data ===
 const mockSiswa = [
-  { id: "S-001", nis: "102030", nama: "Budi Santoso" },
-  { id: "S-002", nis: "102031", nama: "Ani Yudhoyono" },
-  { id: "S-003", nis: "102032", nama: "Charlie van Houten" },
-  { id: "S-004", nis: "102033", nama: "Dewi Lestari" },
-  { id: "S-005", nis: "102034", nama: "Eka Kurniawan" },
+  { id: 'S-001', nis: '102030', nama: 'Budi Santoso' },
+  { id: 'S-002', nis: '102031', nama: 'Ani Yudhoyono' },
+  { id: 'S-003', nis: '102032', nama: 'Charlie van Houten' },
+  { id: 'S-004', nis: '102033', nama: 'Dewi Lestari' },
+  { id: 'S-005', nis: '102034', nama: 'Eka Kurniawan' }
 ];
 
 // === Komponen Utama ===
 const HalamanAbsensiHarian = () => {
   const [selectedDate, setSelectedDate] = useState(getTodayDate());
-  const [selectedKelas, setSelectedKelas] = useState("");
+  const [selectedKelas, setSelectedKelas] = useState('');
   const [rows, setRows] = useState([]);
   const [dailyAttendance, setDailyAttendance] = useState({});
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
-    message: "",
-    severity: "success",
+    message: '',
+    severity: 'success'
   });
 
   // === Handler ===
@@ -59,8 +59,8 @@ const HalamanAbsensiHarian = () => {
     if (!selectedKelas) {
       setSnackbar({
         open: true,
-        message: "Silakan pilih kelas terlebih dahulu.",
-        severity: "warning",
+        message: 'Silakan pilih kelas terlebih dahulu.',
+        severity: 'warning'
       });
       return;
     }
@@ -68,13 +68,13 @@ const HalamanAbsensiHarian = () => {
     setTimeout(() => {
       setRows(mockSiswa);
       const data = {};
-      mockSiswa.forEach((s) => (data[s.id] = "H")); // default hadir semua
+      mockSiswa.forEach((s) => (data[s.id] = 'H')); // default hadir semua
       setDailyAttendance(data);
       setLoading(false);
       setSnackbar({
         open: true,
         message: `Data absensi kelas ${selectedKelas} tanggal ${selectedDate} dimuat.`,
-        severity: "success",
+        severity: 'success'
       });
     }, 800);
   };
@@ -82,18 +82,18 @@ const HalamanAbsensiHarian = () => {
   const handleAttendanceChange = (studentId, newStatus) => {
     setDailyAttendance((prev) => ({
       ...prev,
-      [studentId]: newStatus || "H",
+      [studentId]: newStatus || 'H'
     }));
   };
 
   const handleMarkAllPresent = () => {
     const updated = {};
-    rows.forEach((r) => (updated[r.id] = "H"));
+    rows.forEach((r) => (updated[r.id] = 'H'));
     setDailyAttendance(updated);
     setSnackbar({
       open: true,
-      message: "Semua siswa ditandai Hadir.",
-      severity: "info",
+      message: 'Semua siswa ditandai Hadir.',
+      severity: 'info'
     });
   };
 
@@ -101,44 +101,41 @@ const HalamanAbsensiHarian = () => {
     setLoading(true);
     const dataSimpan = rows.map((r) => ({
       siswaId: r.id,
-      status: dailyAttendance[r.id] || "H",
+      status: dailyAttendance[r.id] || 'H',
       tanggal: selectedDate,
-      kelas: selectedKelas,
+      kelas: selectedKelas
     }));
-    console.log("Data Disimpan:", dataSimpan);
+    console.log('Data Disimpan:', dataSimpan);
     setTimeout(() => {
       setLoading(false);
       setSnackbar({
         open: true,
-        message: "Absensi berhasil disimpan!",
-        severity: "success",
+        message: 'Absensi berhasil disimpan!',
+        severity: 'success'
       });
     }, 1000);
   };
 
-  const handleCloseSnackbar = () =>
-    setSnackbar((prev) => ({ ...prev, open: false }));
+  const handleCloseSnackbar = () => setSnackbar((prev) => ({ ...prev, open: false }));
 
   // === Kolom DataGrid ===
   const columns = [
-    { field: "nis", headerName: "NIS", width: 130 },
-    { field: "nama", headerName: "Nama Siswa", flex: 1, minWidth: 250 },
+    { field: 'nis', headerName: 'NIS', width: 130 },
+    { field: 'nama', headerName: 'Nama Siswa', flex: 1, minWidth: 250 },
     {
-      field: "absensi",
-      headerName: "Status Kehadiran",
+      field: 'absensi',
+      headerName: 'Status Kehadiran',
       width: 250,
-      align: "center",
-      headerAlign: "center",
+      align: 'center',
+      headerAlign: 'center',
       sortable: false,
       renderCell: (params) => {
-        const status = dailyAttendance[params.row.id] || "H";
+        const status = dailyAttendance[params.row.id] || 'H';
         return (
           <ToggleButtonGroup
             value={status}
             exclusive
-            onChange={(e, newStatus) =>
-              handleAttendanceChange(params.row.id, newStatus)
-            }
+            onChange={(e, newStatus) => handleAttendanceChange(params.row.id, newStatus)}
             aria-label="Status Kehadiran"
             size="small"
           >
@@ -156,48 +153,39 @@ const HalamanAbsensiHarian = () => {
             </ToggleButton>
           </ToggleButtonGroup>
         );
-      },
-    },
+      }
+    }
   ];
 
   // === Render ===
   return (
-    <Box sx={{ flexGrow: 1, bgcolor: "grey.50", p: { xs: 1, sm: 2, md: 3 } }}>
+    <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 2 } }}>
       {/* FILTER */}
-      <Card sx={{ mb: 3, p: 2 }}>
+      <Card sx={{ mb: 1, p: 2 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <TextField
-                label="Tanggal"
-                type="date"
-                size="small"
-                fullWidth
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                InputLabelProps={{ shrink: true }}
-              />
-              <FormControl fullWidth size="small" required>
-                <InputLabel>Pilih Kelas</InputLabel>
-                <Select
-                  value={selectedKelas}
-                  label="Pilih Kelas"
-                  onChange={(e) => setSelectedKelas(e.target.value)}
-                >
-                  <MenuItem value="10A">10A</MenuItem>
-                  <MenuItem value="10B">10B</MenuItem>
-                  <MenuItem value="11A">11A</MenuItem>
-                </Select>
-              </FormControl>
-            </Stack>
-          </Grid>
-          <Grid item xs={12} md="auto">
-            <Button
+          <Grid size={{ xs: 6, sm: 6, md: 4 }}>
+            <TextField
+              label="Tanggal"
+              type="date"
+              size="small"
               fullWidth
-              variant="contained"
-              startIcon={<PageviewIcon />}
-              onClick={handleTampilkan}
-            >
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+          </Grid>
+          <Grid size={{ xs: 6, sm: 6, md: 4 }} spacing={2}>
+            <FormControl fullWidth size="small" required>
+              <InputLabel>Pilih Kelas</InputLabel>
+              <Select value={selectedKelas} label="Pilih Kelas" onChange={(e) => setSelectedKelas(e.target.value)}>
+                <MenuItem value="10A">10A</MenuItem>
+                <MenuItem value="10B">10B</MenuItem>
+                <MenuItem value="11A">11A</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Button fullWidth variant="contained" startIcon={<PageviewIcon />} onClick={handleTampilkan}>
               Tampilkan
             </Button>
           </Grid>
@@ -211,13 +199,13 @@ const HalamanAbsensiHarian = () => {
             <Box
               sx={{
                 p: 2,
-                borderBottom: "1px solid",
-                borderColor: "divider",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: 2,
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: 2
               }}
             >
               <Box>
@@ -225,18 +213,13 @@ const HalamanAbsensiHarian = () => {
                   Absensi Harian Kelas {selectedKelas}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Tanggal:{" "}
-                  {new Date(selectedDate).toLocaleDateString("id-ID", {
-                    dateStyle: "full",
+                  Tanggal:{' '}
+                  {new Date(selectedDate).toLocaleDateString('id-ID', {
+                    dateStyle: 'full'
                   })}
                 </Typography>
               </Box>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<CheckCircleOutlineIcon />}
-                onClick={handleMarkAllPresent}
-              >
+              <Button variant="outlined" size="small" startIcon={<CheckCircleOutlineIcon />} onClick={handleMarkAllPresent}>
                 Tandai Hadir Semua
               </Button>
             </Box>
@@ -250,29 +233,21 @@ const HalamanAbsensiHarian = () => {
                 loading={loading}
                 pageSizeOptions={[10, 15, 20]}
                 initialState={{
-                  pagination: { paginationModel: { pageSize: 10 } },
+                  pagination: { paginationModel: { pageSize: 10 } }
                 }}
                 sx={{
-                  border: "none",
-                  "& .MuiDataGrid-columnHeaders": {
-                    backgroundColor: "grey.100",
-                    fontWeight: "bold",
-                  },
+                  border: 'none',
+                  '& .MuiDataGrid-columnHeaders': {
+                    backgroundColor: 'grey.100',
+                    fontWeight: 'bold'
+                  }
                 }}
               />
             </Box>
 
-            <DialogActions
-              sx={{ p: 2, borderTop: "1px solid", borderColor: "divider" }}
-            >
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={<SaveIcon />}
-                onClick={handleSimpanAbsensi}
-                disabled={loading}
-              >
-                {loading ? "Menyimpan..." : "Simpan Absensi"}
+            <DialogActions sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+              <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSimpanAbsensi} disabled={loading}>
+                {loading ? 'Menyimpan...' : 'Simpan Absensi'}
               </Button>
             </DialogActions>
           </Card>
@@ -284,13 +259,9 @@ const HalamanAbsensiHarian = () => {
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
           {snackbar.message}
         </Alert>
       </Snackbar>

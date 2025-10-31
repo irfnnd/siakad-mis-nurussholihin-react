@@ -328,8 +328,8 @@ const SiswaCRUD = () => {
         {/* Header dengan Actions */}
 
         {/* Filter dan Pencarian */}
-        <Card sx={{ mb:{ xs: 1, sm: 1.5, md: 3 }, p: { xs: 1, sm: 1.5, md: 2 }}}>
-          <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }} alignItems="center">
+        <Card sx={{ mb:{ xs: 1, sm: 1.5, md: 3 }, p: { xs: 1.5, sm: 1.5, md: 2 }}}>
+          <Grid container spacing={{ xs: 1.5, sm: 1.5, md: 2 }} alignItems="center">
             <Grid size={{ xs: 12, sm: 6, md: 4.2 }}>
               <TextField
                 fullWidth

@@ -157,8 +157,8 @@ const JadwalPelajaran = () => {
       1. 'size' dihapus dan diganti dengan prop 'container'.
       2. 'spacing' responsif Anda sudah bagus dan dipertahankan.
     */}
-      <Card sx={{ mb: { xs: 1, sm: 1.5, md: 3 }, p: { xs: 1, sm: 1.5, md: 2 } }}>
-        <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }} alignItems="center" justifyContent="space-between">
+      <Card sx={{ mb: { xs: 1, sm: 1.5, md: 3 }, p: { xs: 1.5, sm: 1.5, md: 2 } }}>
+        <Grid container spacing={{ xs: 1.5, sm: 1.5, md: 2 }} alignItems="center" justifyContent="space-between">
           {/* ITEM 1: Grup Filter
           PERBAIKAN: 
           1. 'size' diubah menjadi 'item'.

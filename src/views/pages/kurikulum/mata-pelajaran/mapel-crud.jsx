@@ -163,11 +163,11 @@ const MapelCRUD_SD = () => {
   ];
 
   return (
-    <Box sx={{ p: { xs: 1, sm: 1.5, md: 2 }, bgcolor: 'grey.50' }}>
-      <Card sx={{ mb:{ xs: 1, sm: 1.5, md: 3 }, p: { xs: 1, sm: 1.5, md: 2 } }}>
+    <Box sx={{ p: { xs: 1.5, sm: 1.5, md: 2 }, bgcolor: 'grey.50' }}>
+      <Card sx={{ mb:{ xs: 1, sm: 1.5, md: 3 }, p: { xs: 1.5, sm: 1.5, md: 2 } }}>
         <Grid
             container
-            spacing={{ xs: 1, sm: 1.5, md: 2 }}
+            spacing={{ xs: 1.5, sm: 1.5, md: 2 }}
             alignItems="center"
             justifyContent="space-between"
         >
