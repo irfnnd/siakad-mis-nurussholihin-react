@@ -267,7 +267,7 @@ const HalamanNilaiSiswa = () => {
             </FormControl>
           </Grid>
 
-          <Grid size={{ xs: 8, sm: 3, md: 1.5 }}>
+          <Grid size={{ xs: 8, sm: 3, md: 2 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Mata Pelajaran</InputLabel>
               <Select value={selectedMapel} onChange={(e) => setSelectedMapel(e.target.value)} label="Mata Pelajaran">

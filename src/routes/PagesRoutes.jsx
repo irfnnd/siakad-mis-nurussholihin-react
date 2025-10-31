@@ -27,7 +27,8 @@ const PagesRoutes = {
         }
       ]
     }
-  ]
+  ],
+  path: '/pages'
 };
 
 export default PagesRoutes;

@@ -163,7 +163,7 @@ const HalamanAbsensiHarian = () => {
       {/* FILTER */}
       <Card sx={{ mb: 1, p: 2 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid size={{ xs: 6, sm: 6, md: 4 }}>
+          <Grid size={{ xs: 6, sm: 6, md: 2 }}>
             <TextField
               label="Tanggal"
               type="date"
@@ -174,7 +174,7 @@ const HalamanAbsensiHarian = () => {
               InputLabelProps={{ shrink: true }}
             />
           </Grid>
-          <Grid size={{ xs: 6, sm: 6, md: 4 }} spacing={2}>
+          <Grid size={{ xs: 6, sm: 6, md: 2 }} spacing={2}>
             <FormControl fullWidth size="small" required>
               <InputLabel>Pilih Kelas</InputLabel>
               <Select value={selectedKelas} label="Pilih Kelas" onChange={(e) => setSelectedKelas(e.target.value)}>
@@ -184,7 +184,7 @@ const HalamanAbsensiHarian = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <Button fullWidth variant="contained" startIcon={<PageviewIcon />} onClick={handleTampilkan}>
               Tampilkan
             </Button>

@@ -9,6 +9,7 @@ const DashboardDefault = Loadable(lazy(() => import('views/dashboard/default')))
 const SiswaCRUD = Loadable(lazy(() => import('views/pages/data-master/data-siswa/data-siswa-crud')));
 const DataKelas = Loadable(lazy(() => import('views/pages/kurikulum/data-kelas/data-kelas-crud')));
 const DataPegawai = Loadable(lazy(() => import('views/pages/data-master/data-pegawai/data-pegawai-crud')));
+const WebSekolah = Loadable(lazy(() => import('views/web-sekolah/index')));
 
 // utils
 const UtilsTypography = Loadable(lazy(() => import('views/components/Typography')));
@@ -28,14 +29,6 @@ const MainRoutes = {
       element: <DashboardDefault />
     },
     {
-      path: '/data/siswa',
-      element: <SiswaCRUD />
-    },
-    {
-      path: '/data/pegawai',
-      element: < DataPegawai/>
-    },
-    {
       path: 'components',
       children: [
         {
@@ -44,7 +37,7 @@ const MainRoutes = {
         }
       ]
     }
-  ]
+  ],
 };
 // const KurikulumRoutes = {
 //   path: '/kurikulum',
