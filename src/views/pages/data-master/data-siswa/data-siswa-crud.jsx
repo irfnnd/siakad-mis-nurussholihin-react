@@ -330,7 +330,7 @@ const SiswaCRUD = () => {
         {/* Filter dan Pencarian */}
         <Card sx={{ mb:{ xs: 1, sm: 1.5, md: 3 }, p: { xs: 1, sm: 1.5, md: 2 }}}>
           <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }} alignItems="center">
-            <Grid size={{ xs: 12, sm: 6, md: 4.6 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 4.2 }}>
               <TextField
                 fullWidth
                 size="small"
@@ -392,7 +392,7 @@ const SiswaCRUD = () => {
                 Reset
               </Button>
             </Grid>
-            <Grid size={{ xs: 6, sm: 6, md: 1.2 }}>
+            <Grid size={{ xs: 6, sm: 6, md: 1.6 }}>
               <Button 
                 fullWidth
                 variant="outlined" 

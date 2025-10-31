@@ -102,21 +102,21 @@ const akademik = {
       children: [
         {
           id: 'input-nilai',
-          title: 'Input Nilai',
+          title: 'Nilai Siswa',
           type: 'item',
-          url: '/akademik/input-nilai'
+          url: '/akademik/nilai-siswa'
         },
         {
           id: 'e-rapor',
-          title: 'E-Rapor',
+          title: 'Rapor Siswa',
           type: 'item',
-          url: '/akademik/e-rapor'
+          url: '/akademik/rapor-siswa'
         },
         {
           id: 'absensi',
           title: 'Absensi Siswa',
           type: 'item',
-          url: '/akademik/absensi'
+          url: '/akademik/absensi-siswa'
         }
       ]
     }

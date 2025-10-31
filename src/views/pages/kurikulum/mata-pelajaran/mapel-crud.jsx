@@ -235,14 +235,24 @@ const MapelCRUD_SD = () => {
 
       {/* Dialog Form Tambah/Edit */}
       <Dialog open={openFormDialog} onClose={handleCloseForm} fullWidth maxWidth="sm">
-        <DialogTitle>{isEditMode ? 'Edit Mata Pelajaran' : 'Tambah Mata Pelajaran Baru'}</DialogTitle>
+        <DialogTitle sx={{
+            bgcolor: 'primary.main',
+
+            color: 'white',
+
+            display: 'flex',
+
+            alignItems: 'center',
+
+            gap: 1
+          }}>{isEditMode ? 'Edit Mata Pelajaran' : 'Tambah Mata Pelajaran Baru'}</DialogTitle>
         <Box component="form" onSubmit={handleFormSubmit}>
           <DialogContent sx={{ pt: 2 }}>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField name="kode_mapel" label="Kode Mapel" defaultValue={selectedMapel?.kode_mapel || ''} fullWidth required disabled={isEditMode} />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField name="nama_mapel" label="Nama Mata Pelajaran" defaultValue={selectedMapel?.nama_mapel || ''} fullWidth required />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
@@ -255,7 +265,7 @@ const MapelCRUD_SD = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField name="kkm" label="KKM (Nilai Minimum)" type="number" defaultValue={selectedMapel?.kkm || ''} fullWidth required />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
