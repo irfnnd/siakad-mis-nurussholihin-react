@@ -158,29 +158,6 @@ const kurikulum = {
   ]
 };
 
-// Publikasi
-const publikasi = {
-  id: 'publikasi',
-  title: 'Publikasi & Informasi',
-  type: 'group',
-  children: [
-    {
-      id: 'informasi',
-      title: 'Informasi & Pengumuman',
-      type: 'item',
-      url: '/informasi/pengumuman',
-      icon: icons.IconSpeakerphone
-    },
-    {
-      id: 'kegiatan',
-      title: 'Kegiatan Sekolah',
-      type: 'item',
-      url: '/publikasi/kegiatan',
-      icon: icons.IconPhoto
-    }
-  ]
-};
-
 // Manajemen User
 const manajemenUser = {
   id: 'manajemen-user',
