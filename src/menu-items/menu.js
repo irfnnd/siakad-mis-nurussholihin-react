@@ -168,7 +168,7 @@ const manajemenUser = {
           id: 'data-user',
           title: 'Data User',
           type: 'item',
-          url: '/data-user',
+          url: '/auth/manajemen-pengguna',
           icon: icons.IconUserAdd
     }
   ]
@@ -176,7 +176,7 @@ const manajemenUser = {
 
 // ==============================|| EKSPOR MENU UTAMA ||============================== //
 const menuItems = {
-  items: [dashboard, manajemenData, akademik, kurikulum, publikasi, manajemenUser]
+  items: [dashboard, manajemenData, akademik, kurikulum, manajemenUser]
 };
 
 export default menuItems;
