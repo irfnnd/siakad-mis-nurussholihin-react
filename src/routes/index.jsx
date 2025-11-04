@@ -6,12 +6,11 @@ import PagesRoutes from './PagesRoutes';
 import KurikulumRoutes from './KurikulumRoutes';
 import AkademikRoutes from './AkademikRoutes';
 import DataRoutes from './DataRoutes';
-import WebSekolahRoutes from './WebSekolahRoutes';
 import AuthRoutes from './AuthRoutes'; 
 
 // ==============================|| ROUTING RENDER ||============================== //
 
-const router = createBrowserRouter([MainRoutes, PagesRoutes, KurikulumRoutes, AkademikRoutes, DataRoutes, WebSekolahRoutes, AuthRoutes], {
+const router = createBrowserRouter([MainRoutes, PagesRoutes, KurikulumRoutes, AkademikRoutes, DataRoutes,  AuthRoutes], {
   basename: import.meta.env.VITE_APP_BASE_URL
 });
 

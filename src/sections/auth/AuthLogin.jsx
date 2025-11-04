@@ -75,16 +75,6 @@ export default function AuthLogin({ inputSx }) {
             sx={{ alignItems: 'flex-start', justifyContent: errors.password ? 'space-between' : 'flex-end', width: 1, gap: 1 }}
           >
             {errors.password?.message && <FormHelperText error>{errors.password.message}</FormHelperText>}
-            <Link
-              component={RouterLink}
-              underline="hover"
-              variant="subtitle2"
-              to="#"
-              textAlign="right"
-              sx={{ '&:hover': { color: 'primary.dark' }, mt: 0.375, whiteSpace: 'nowrap' }}
-            >
-              Forgot Password?
-            </Link>
           </Stack>
         </Box>
       </Stack>

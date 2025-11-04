@@ -11,12 +11,9 @@ const RegisterPage = Loadable(lazy(() => import('views/auth/Register')));
 // ==============================|| PAGES ROUTES ||============================== //
 
 const PagesRoutes = {
-  path: 'pages',
+  path: '/auth',
   element: <MinimalLayout />,
   children: [
-    {
-      path: 'auth',
-      children: [
         {
           path: 'login',
           element: <LoginPage />
@@ -25,10 +22,8 @@ const PagesRoutes = {
           path: 'register',
           element: <RegisterPage />
         }
-      ]
-    }
+
   ],
-  path: '/pages'
 };
 
 export default PagesRoutes;

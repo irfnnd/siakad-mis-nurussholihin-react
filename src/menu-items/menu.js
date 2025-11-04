@@ -17,6 +17,13 @@ import Language from '@mui/icons-material/Language';
 import School from '@mui/icons-material/School';
 import Article from '@mui/icons-material/Article';
 import PhotoLibrary from '@mui/icons-material/PhotoLibrary';
+import PageviewIcon from '@mui/icons-material/Pageview';
+import PrintIcon from '@mui/icons-material/Print';
+import PersonIcon from '@mui/icons-material/Person';
+import SchoolIcon from '@mui/icons-material/School';
+import ChecklistIcon from '@mui/icons-material/Checklist';
+import NoteAltIcon from '@mui/icons-material/NoteAlt';
+import SaveIcon from '@mui/icons-material/Save';
 
 // ==============================|| PENYIMPANAN IKON DALAM OBJEK ||============================== //
 const icons = {
@@ -37,7 +44,8 @@ const icons = {
   IconLanguage: Language,
   IconSchool: School,
   IconArticle: Article,
-  IconPhoto: PhotoLibrary
+  IconPhoto: PhotoLibrary,
+
 };
 
 // ==============================|| MENU ITEMS ||============================== //
@@ -90,35 +98,30 @@ const manajemenData = {
 
 // Akademik
 const akademik = {
-  id: 'akademik',
-  title: 'Akademik',
+  id: 'manajemen-akademik',
+  title: 'Manajemen Akademik',
   type: 'group',
   children: [
     {
-      id: 'manajemen-akademik',
-      title: 'Manajemen Akademik',
-      type: 'collapse',
-      icon: icons.IconBook,
-      children: [
-        {
-          id: 'input-nilai',
-          title: 'Nilai Siswa',
-          type: 'item',
-          url: '/akademik/nilai-siswa'
-        },
-        {
-          id: 'e-rapor',
-          title: 'Rapor Siswa',
-          type: 'item',
-          url: '/akademik/rapor-siswa'
-        },
-        {
-          id: 'absensi',
-          title: 'Absensi Siswa',
-          type: 'item',
-          url: '/akademik/absensi-siswa'
-        }
-      ]
+      id: 'input-nilai',
+      title: 'Nilai Siswa',
+      type: 'item',
+      url: '/akademik/nilai-siswa',
+      icon: NoteAltIcon // <-- Ikon sub-menu
+    },
+    {
+      id: 'e-rapor',
+      title: 'Rapor Siswa',
+      type: 'item',
+      url: '/akademik/rapor-siswa',
+      icon: PrintIcon // <-- Ikon sub-menu
+    },
+    {
+      id: 'absensi',
+      title: 'Absensi Siswa',
+      type: 'item',
+      url: '/akademik/absensi-siswa',
+      icon: ChecklistIcon // <-- Ikon sub-menu
     }
   ]
 };
