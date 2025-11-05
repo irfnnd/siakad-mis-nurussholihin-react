@@ -6,10 +6,10 @@ import MainLayout from 'layouts/MainLayout';
 
 // pages
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/default')));
+const Dashboard = Loadable(lazy(() => import('views/dashboard/dashboard')));
 const SiswaCRUD = Loadable(lazy(() => import('views/pages/data-master/data-siswa/data-siswa-crud')));
 const DataKelas = Loadable(lazy(() => import('views/pages/kurikulum/data-kelas/data-kelas-crud')));
 const DataPegawai = Loadable(lazy(() => import('views/pages/data-master/data-pegawai/data-pegawai-crud')));
-const WebSekolah = Loadable(lazy(() => import('views/web-sekolah/index')));
 
 // utils
 const UtilsTypography = Loadable(lazy(() => import('views/components/Typography')));
@@ -22,11 +22,11 @@ const MainRoutes = {
   children: [
     {
       path: '/',
-      element: <DashboardDefault />
+      element: <Dashboard />
     },
     {
       path: '/dashboard',
-      element: <DashboardDefault />
+      element: <Dashboard />
     },
     {
       path: 'components',

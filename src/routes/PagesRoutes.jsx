@@ -6,7 +6,6 @@ import MinimalLayout from 'layouts/minimalLayout';
 
 // pages
 const LoginPage = Loadable(lazy(() => import('views/auth/Login')));
-const RegisterPage = Loadable(lazy(() => import('views/auth/Register')));
 
 // ==============================|| PAGES ROUTES ||============================== //
 
@@ -18,10 +17,6 @@ const PagesRoutes = {
           path: 'login',
           element: <LoginPage />
         },
-        {
-          path: 'register',
-          element: <RegisterPage />
-        }
 
   ],
 };

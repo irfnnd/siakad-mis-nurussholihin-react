@@ -179,7 +179,7 @@ const manajemenUser = {
 
 // ==============================|| EKSPOR MENU UTAMA ||============================== //
 const menuItems = {
-  items: [dashboard, manajemenData, akademik, kurikulum, manajemenUser]
+  items: [dashboard, akademik, kurikulum, manajemenData, manajemenUser]
 };
 
 export default menuItems;
