@@ -189,7 +189,7 @@ const GuruDashboard = () => {
   ];
 
 return (
-  <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+  <Box sx={{ p: { xs: 1, sm: 2, md: 2 } }}>
     <Typography variant="h4" fontWeight={600} gutterBottom>
       Dashboard
     </Typography>

@@ -323,17 +323,14 @@ const HalamanRaporSiswa = () => {
                           <TextField
                             label="Sakit"
                             value={`${reportData.nonAcademic.attendance.sakit} hari`}
-                            InputProps={{ readOnly: true }}
                           />
                           <TextField
                             label="Izin"
                             value={`${reportData.nonAcademic.attendance.izin} hari`}
-                            InputProps={{ readOnly: true }}
                           />
                           <TextField
                             label="Alpha"
                             value={`${reportData.nonAcademic.attendance.alpha} hari`}
-                            InputProps={{ readOnly: true }}
                           />
                         </Stack>
                       </Grid>
@@ -345,7 +342,6 @@ const HalamanRaporSiswa = () => {
                           <TextField
                             label="Spiritual"
                             value={reportData.nonAcademic.sikap.spiritual}
-                            InputProps={{ readOnly: true }}
                             fullWidth
                           />
                           <TextField label="Sosial" value={reportData.nonAcademic.sikap.sosial} InputProps={{ readOnly: true }} fullWidth />

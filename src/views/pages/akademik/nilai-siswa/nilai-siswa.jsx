@@ -39,7 +39,9 @@ const getPredikat = (nilai) => {
   return 'D';
 };
 
-// === MOCK DATA ===
+// === MOCK DATA (SD Workflow) ===
+
+// Daftar Siswa (Konstan untuk kelas ini)
 const mockStudents = [
   { id: 'S-001', nis: '102030', nama: 'Budi Santoso' },
   { id: 'S-002', nis: '102031', nama: 'Ani Yudhoyono' },
@@ -47,34 +49,58 @@ const mockStudents = [
   { id: 'S-004', nis: '102033', nama: 'Dewi Lestari' }
 ];
 
-const mockAssignments = [
-  { id: 'A-01', nama: 'Tugas 1', tipe: 'Harian' },
-  { id: 'A-02', nama: 'UH 1', tipe: 'Harian' },
-  { id: 'PTS-01', nama: 'PTS', tipe: 'PTS' },
-  { id: 'PAS-01', nama: 'PAS', tipe: 'PAS' }
-];
+// Data untuk Mapel MATEMATIKA
+const mockDataMatematika = {
+  assignments: [
+    { id: 'MTK-A-01', nama: 'Tugas 1 (MTK)', tipe: 'Harian' },
+    { id: 'MTK-A-02', nama: 'UH 1 (MTK)', tipe: 'Harian' },
+    { id: 'MTK-PTS-01', nama: 'PTS', tipe: 'PTS' },
+    { id: 'MTK-PAS-01', nama: 'PAS', tipe: 'PAS' }
+  ],
+  grades: [
+    { studentId: 'S-001', assignmentId: 'MTK-A-01', nilai: 80 },
+    { studentId: 'S-001', assignmentId: 'MTK-A-02', nilai: 90 },
+    { studentId: 'S-001', assignmentId: 'MTK-PTS-01', nilai: 85 },
+    { studentId: 'S-001', assignmentId: 'MTK-PAS-01', nilai: 88 },
+    { studentId: 'S-002', assignmentId: 'MTK-A-01', nilai: 90 },
+    { studentId: 'S-002', assignmentId: 'MTK-PTS-01', nilai: 92 },
+  ],
+  bobot: { harian: 40, pts: 30, pas: 30 }
+};
 
-const mockGrades = [
-  { studentId: 'S-001', assignmentId: 'A-01', nilai: 80 },
-  { studentId: 'S-001', assignmentId: 'A-02', nilai: 90 },
-  { studentId: 'S-001', assignmentId: 'PTS-01', nilai: 85 },
-  { studentId: 'S-001', assignmentId: 'PAS-01', nilai: 88 },
-  { studentId: 'S-002', assignmentId: 'A-01', nilai: 90 },
-  { studentId: 'S-002', assignmentId: 'PTS-01', nilai: 92 },
-  { studentId: 'S-003', assignmentId: 'A-01', nilai: 75 },
-  { studentId: 'S-003', assignmentId: 'PTS-01', nilai: 70 },
-  { studentId: 'S-003', assignmentId: 'PAS-01', nilai: 78 }
-];
+// Data untuk Mapel IPA (berbeda)
+const mockDataIPA = {
+  assignments: [
+    { id: 'IPA-A-01', nama: 'Proyek 1 (IPA)', tipe: 'Harian' },
+    { id: 'IPA-A-02', nama: 'UH 1 (IPA)', tipe: 'Harian' },
+    { id: 'IPA-PTS-01', nama: 'PTS', tipe: 'PTS' },
+    { id: 'IPA-PAS-01', nama: 'PAS', tipe: 'PAS' }
+  ],
+  grades: [
+    { studentId: 'S-001', assignmentId: 'IPA-A-01', nilai: 88 },
+    { studentId: 'S-002', assignmentId: 'IPA-A-01', nilai: 95 },
+    { studentId: 'S-003', assignmentId: 'IPA-A-02', nilai: 78 },
+    { studentId: 'S-003', assignmentId: 'IPA-PTS-01', nilai: 80 },
+  ],
+  bobot: { harian: 50, pts: 25, pas: 25 } // Bobot IPA berbeda
+};
 
-const mockBobot = { harian: 40, pts: 30, pas: 30 };
 
 // === KOMPONEN UTAMA ===
-const HalamanNilaiSiswa = () => {
+const HalamanNilaiSiswa = () => { // Ganti nama komponen
+  
+  // === SIMULASI KONTEKS GURU KELAS (SD) ===
+  // Di aplikasi nyata, ini akan datang dari state login (Auth Context)
+  const waliKelasInfo = {
+    kelasId: '4A',
+    namaKelas: 'Kelas 4A'
+  };
+
   // === STATE ===
   const [selectedTahun, setSelectedTahun] = useState('2024/2025');
   const [selectedSemester, setSelectedSemester] = useState('Ganjil');
-  const [selectedKelas, setSelectedKelas] = useState('');
-  const [selectedMapel, setSelectedMapel] = useState('');
+  // 'selectedKelas' DIHAPUS, diganti dengan 'waliKelasInfo'
+  const [selectedMapel, setSelectedMapel] = useState(''); // Ini filter utama
 
   const [students, setStudents] = useState([]);
   const [assignments, setAssignments] = useState([]);
@@ -91,18 +117,32 @@ const HalamanNilaiSiswa = () => {
 
   // === HANDLER ===
   const handleTampilkan = () => {
-    if (!selectedKelas || !selectedMapel) {
-      setSnackbar({ open: true, message: 'Silakan pilih Kelas dan Mata Pelajaran.', severity: 'warning' });
+    // Validasi diubah: hanya cek mapel
+    if (!selectedMapel) {
+      setSnackbar({ open: true, message: 'Silakan pilih Mata Pelajaran.', severity: 'warning' });
       return;
     }
     setLoading(true);
+
+    // Logika baru: Muat data berdasarkan mapel yang dipilih
+    let dataToLoad;
+    if (selectedMapel === 'Matematika') {
+      dataToLoad = mockDataMatematika;
+    } else if (selectedMapel === 'IPA') {
+      dataToLoad = mockDataIPA;
+    } else {
+      // Fallback jika mapel lain dipilih (data kosong)
+      dataToLoad = { assignments: [], grades: [], bobot: { harian: 40, pts: 30, pas: 30 } };
+    }
+
     setTimeout(() => {
-      setStudents(mockStudents);
-      setAssignments(mockAssignments);
-      setGrades(mockGrades);
-      setBobot(mockBobot);
+      setStudents(mockStudents); // Daftar siswa selalu sama untuk kelas ini
+      setAssignments(dataToLoad.assignments);
+      setGrades(dataToLoad.grades);
+      setBobot(dataToLoad.bobot);
       setLoading(false);
-      setSnackbar({ open: true, message: `Buku nilai ${selectedMapel} kelas ${selectedKelas} dimuat.`, severity: 'success' });
+      // Pesan snackbar diubah
+      setSnackbar({ open: true, message: `Buku nilai ${selectedMapel} kelas ${waliKelasInfo.namaKelas} dimuat.`, severity: 'success' });
     }, 1000);
   };
 
@@ -111,9 +151,11 @@ const HalamanNilaiSiswa = () => {
       setSnackbar({ open: true, message: 'Total bobot harus 100%.', severity: 'error' });
       return;
     }
-    setSnackbar({ open: true, message: 'Bobot berhasil disimpan.', severity: 'success' });
+    // API save...
+    setSnackbar({ open: true, message: `Bobot ${selectedMapel} berhasil disimpan.`, severity: 'success' });
   };
 
+  // Handler lain (tidak perlu diubah)
   const handleOpenAddDialog = () => setOpenAddDialog(true);
   const handleCloseAddDialog = () => setOpenAddDialog(false);
 
@@ -159,12 +201,13 @@ const HalamanNilaiSiswa = () => {
   const handleCloseSnackbar = () => setSnackbar((prev) => ({ ...prev, open: false }));
 
   // === DATAGRID SETUP ===
+  // Logika ini tidak perlu diubah, akan bekerja dengan state yang baru
   const columns = useMemo(() => {
     if (!assignments?.length) return [];
 
     const staticCols = [
-      { field: 'nis', headerName: 'NIS', width: 100 },
-      { field: 'nama', headerName: 'Nama Siswa', flex: 1, minWidth: 200 }
+      { field: 'nis', headerName: 'NIS', width: 100, editable: false, cellClassName: 'static-cell' },
+      { field: 'nama', headerName: 'Nama Siswa', flex: 1, minWidth: 200, editable: false, cellClassName: 'static-cell' }
     ];
 
     const dynamicCols = assignments.map((a) => ({
@@ -181,45 +224,53 @@ const HalamanNilaiSiswa = () => {
         field: 'avgHarian',
         headerName: 'Rata2 Harian',
         width: 110,
+        type: 'number',
+        editable: false,
+        cellClassName: 'calculated-cell',
         valueGetter: (p) => {
-          if (!p?.row) return 0;
+          if (!p?.row) return null;
           const ids = assignments.filter((a) => a.tipe === 'Harian').map((a) => a.id);
-          const avg = getAverage(ids.map((id) => p.row?.[id] ?? 0));
-          return Math.round(avg);
+          const avg = getAverage(ids.map((id) => p.row?.[id] ?? null));
+          return avg > 0 ? Math.round(avg) : null;
         }
       },
       {
         field: 'nilaiAkhir',
         headerName: 'Nilai Akhir',
         width: 110,
+        type: 'number',
+        editable: false,
+        cellClassName: 'calculated-cell final-grade',
         valueGetter: (p) => {
-          if (!p?.row) return 0;
-          const harianIds = assignments.filter((a) => a.tipe === 'Harian').map((a) => a.id);
+          if (!p?.row) return null;
+          // Gunakan 'getCellValue' untuk mengambil nilai dari kolom kalkulasi 'avgHarian'
+          const avgHarian = p.api.getCellValue(p.id, 'avgHarian') || 0;
+          
           const ptsId = assignments.find((a) => a.tipe === 'PTS')?.id;
           const pasId = assignments.find((a) => a.tipe === 'PAS')?.id;
-
-          const avgHarian = getAverage(harianIds.map((id) => p.row?.[id] ?? 0));
           const nilaiPts = ptsId ? (p.row?.[ptsId] ?? 0) : 0;
           const nilaiPas = pasId ? (p.row?.[pasId] ?? 0) : 0;
 
           const final = (avgHarian * bobot.harian) / 100 + (nilaiPts * bobot.pts) / 100 + (nilaiPas * bobot.pas) / 100;
-          return Math.round(final);
+          return final > 0 ? Math.round(final) : null;
         }
       },
       {
         field: 'predikat',
         headerName: 'Predikat',
         width: 90,
+        editable: false,
+        cellClassName: 'calculated-cell',
         valueGetter: (p) => {
           if (!p?.row) return '-';
           const nilaiAkhir = p.api.getCellValue(p.id, 'nilaiAkhir');
-          return getPredikat(nilaiAkhir || 0);
+          return nilaiAkhir ? getPredikat(nilaiAkhir) : '-';
         }
       }
     ];
 
     return [...staticCols, ...dynamicCols, ...calcCols];
-  }, [assignments, bobot]);
+  }, [assignments, bobot]); // 'bobot' adalah dependensi penting
 
   const rows = useMemo(() => {
     return students.map((s) => {
@@ -232,151 +283,174 @@ const HalamanNilaiSiswa = () => {
     });
   }, [students, assignments, grades]);
 
-  // === RENDER ===
-  return (
-    <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 3 } }}>
-      {/* FILTER */}
-      <Card sx={{ mb: 1, p: 2 }}>
-        <Grid container spacing={{xs: 1.5, sm: 1.5, md: 2}} alignItems="center">
-          <Grid size={{ xs: 6, sm: 3, md: 1.5 }}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Tahun Ajaran</InputLabel>
-              <Select value={selectedTahun} onChange={(e) => setSelectedTahun(e.target.value)} label="Tahun Ajaran">
-                <MenuItem value="2024/2025">2024/2025</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid size={{ xs: 6, sm: 3, md: 1.5 }}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Semester</InputLabel>
-              <Select value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value)} label="Semester">
-                <MenuItem value="Ganjil">Ganjil</MenuItem>
-                <MenuItem value="Genap">Genap</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid size={{ xs: 4, sm: 3, md: 1.5 }}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Kelas</InputLabel>
-              <Select value={selectedKelas} onChange={(e) => setSelectedKelas(e.target.value)} label="Kelas">
-                <MenuItem value="10A">10A</MenuItem>
-                <MenuItem value="10B">10B</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid size={{ xs: 8, sm: 3, md: 2 }}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Mata Pelajaran</InputLabel>
-              <Select value={selectedMapel} onChange={(e) => setSelectedMapel(e.target.value)} label="Mata Pelajaran">
-                <MenuItem value="Matematika">Matematika</MenuItem>
-                <MenuItem value="Fisika">Fisika</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 3, md: 1.5 }}>
-            <Button fullWidth variant="contained" startIcon={<PageviewIcon />} onClick={handleTampilkan}>
-              Tampilkan
-            </Button>
-          </Grid>
+// === RENDER ===
+return (
+  <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 3 } }}>
+    
+    {/* === FILTER (SD Workflow) === */}
+    <Card sx={{ mb: 1, p: 2 }}>
+      <Grid container spacing={{ xs: 1.5, sm: 2 }} alignItems="center">
+        
+        <Grid item size={{ xs: 6, sm: 4, md: 2 }}>
+          <FormControl fullWidth size="small">
+            <InputLabel>Tahun Ajaran</InputLabel>
+            <Select value={selectedTahun} onChange={(e) => setSelectedTahun(e.target.value)} label="Tahun Ajaran">
+              <MenuItem value="2024/2025">2024/2025</MenuItem>
+            </Select>
+          </FormControl>
         </Grid>
-      </Card>
 
-      {students.length > 0 && (
-        <Fade in>
-          <Box>
-            {/* === KONFIGURASI BOBOT === */}
-            <Card sx={{ mb: 1, p: { xs: 1.5, sm: 1.5, md: 2 } }}>
-              <Typography variant="h6" gutterBottom>
-                Konfigurasi Bobot Nilai
-              </Typography>
-              <Grid container spacing={{ xs: 1.5, sm: 1.5, md: 2 }} alignItems="center">
-                {['harian', 'pts', 'pas'].map((key) => (
-                  <Grid item size={{ xs: 4, sm: 3, md: 1.5 }} key={key}>
-                    <TextField
-                      label={`Bobot ${key.toUpperCase()}`}
-                      type="number"
-                      size="small"
-                      fullWidth
-                      value={bobot[key]}
-                      onChange={(e) => setBobot((b) => ({ ...b, [key]: Math.max(0, parseFloat(e.target.value) || 0) }))}
-                      InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
-                    />
-                  </Grid>
-                ))}
-                <Grid size={{ xs: 6, sm: 3, md: 1.5 }}>
-                  <Button fullWidth variant="contained" startIcon={<SaveIcon />} onClick={handleSimpanBobot} disabled={bobotError}>
-                    Simpan
-                  </Button>
-                </Grid>
-                <Grid size={{ xs: 6, sm: 3, md: 1.5 }}>
-                  <Typography color={bobotError ? 'error' : 'success'}>
-                    Total Bobot: {totalBobot}% {bobotError && '(harus 100%)'}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Card>
-
-            {/* === TABEL NILAI === */}
-            <Card>
-              <Box sx={{ p: { xs: 1.5, sm: 1.5, md: 2 }, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="h6">Buku Nilai Siswa</Typography>
-                <Button variant="outlined" startIcon={<AddIcon />} onClick={handleOpenAddDialog}>
-                  Tambah Penilaian Harian
-                </Button>
-              </Box>
-
-              <Box sx={{ p: { xs: 1.5, sm: 1.5, md: 2 } }}>
-                <DataGrid
-                  rows={rows}
-                  columns={columns}
-                  loading={loading}
-                  autoHeight
-                  disableRowSelectionOnClick
-                  processRowUpdate={processRowUpdate}
-                  onProcessRowUpdateError={handleProcessRowUpdateError}
-                />
-              </Box>
-            </Card>
-          </Box>
-        </Fade>
-      )}
-
-      {/* === DIALOG TAMBAH PENILAIAN === */}
-      <Dialog open={openAddDialog} onClose={handleCloseAddDialog} fullWidth maxWidth="xs">
-        <DialogTitle>Tambah Penilaian Harian</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Nama Penilaian"
-            value={newAssignmentName}
-            onChange={(e) => setNewAssignmentName(e.target.value)}
-            sx={{ mt: 2 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseAddDialog}>Batal</Button>
-          <Button onClick={handleSaveNewAssignment} disabled={!newAssignmentName.trim()} variant="contained">
-            Simpan
+        <Grid item size={{ xs: 6, sm: 4, md: 2 }}>
+          <FormControl fullWidth size="small">
+            <InputLabel>Semester</InputLabel>
+            <Select value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value)} label="Semester">
+              <MenuItem value="Ganjil">Ganjil</MenuItem>
+              <MenuItem value="Genap">Genap</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+        
+        <Grid item size={{ xs: 12, sm: 4, md: 3 }}>
+          <Typography 
+            variant="subtitle1" 
+            sx={{ p: 1, borderRadius: 1, bgcolor: 'primary.lighter', color: 'primary.darker', textAlign: 'center' }}
+          >
+            <strong>Wali Kelas: {waliKelasInfo.namaKelas}</strong>
+          </Typography>
+        </Grid>
+        
+        <Grid item size={{ xs: 7, sm: 6, md: 3 }}>
+          <FormControl fullWidth size="small" required>
+            <InputLabel>Mata Pelajaran</InputLabel>
+            <Select value={selectedMapel} onChange={(e) => setSelectedMapel(e.target.value)} label="Mata Pelajaran">
+              <MenuItem value="Matematika">Matematika</MenuItem>
+              <MenuItem value="IPA">IPA</MenuItem>
+              <MenuItem value="Bahasa Indonesia">Bahasa Indonesia</MenuItem>
+              <MenuItem value="IPS">IPS</MenuItem>
+              <MenuItem value="PPKn">PPKn</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+        
+        <Grid item size={{ xs: 5, sm: 6, md: 2 }}>
+          <Button fullWidth variant="contained" startIcon={<PageviewIcon />} onClick={handleTampilkan}>
+            Tampilkan
           </Button>
-        </DialogActions>
-      </Dialog>
+        </Grid>
 
-      {/* === SNACKBAR === */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
-  );
+      </Grid>
+    </Card>
+
+    {/* === DATA TAMPILAN === */}
+    {students.length > 0 && (
+      <Fade in>
+        <Box>
+          {/* === KONFIGURASI BOBOT === */}
+          <Card sx={{ mb: 1, p: { xs: 1.5, sm: 2 } }}>
+            <Typography variant="h6" gutterBottom>
+              Konfigurasi Bobot: {selectedMapel}
+            </Typography>
+            <Grid container spacing={{ xs: 1.5, sm: 2 }} alignItems="center">
+              {['harian', 'pts', 'pas'].map((key) => (
+                <Grid item size={{ xs: 4, sm: 4, md: 2 }} key={key}>
+                  <TextField
+                    label={`Bobot ${key.toUpperCase()}`}
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={bobot[key]}
+                    onChange={(e) => setBobot((b) => ({ ...b, [key]: Math.max(0, parseFloat(e.target.value) || 0) }))}
+                    InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
+                  />
+                </Grid>
+              ))}
+              <Grid item size={{ xs: 7, sm: 6, md: 3 }}>
+                <Button fullWidth variant="contained" startIcon={<SaveIcon />} onClick={handleSimpanBobot} disabled={bobotError}>
+                  Simpan Bobot
+                </Button>
+              </Grid>
+              <Grid item size={{ xs: 5, sm: 6, md: 3 }}>
+                <Typography 
+                  variant="subtitle2"
+                  color={bobotError ? 'error.main' : 'success.main'}
+                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}
+                >
+                  {bobotError && <WarningIcon fontSize="small" sx={{ mr: 1 }} />}
+                  Total Bobot: {totalBobot}% {bobotError && '(harus 100%)'}
+                </Typography>
+              </Grid>
+            </Grid>
+          </Card>
+
+          {/* === TABEL NILAI === */}
+          <Card>
+            <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+              <Typography variant="h6">Buku Nilai: {selectedMapel}</Typography>
+              <Button variant="outlined" startIcon={<AddIcon />} onClick={handleOpenAddDialog}>
+                Tambah Penilaian Harian
+              </Button>
+            </Box>
+
+            <Box sx={{ p: { xs: 1, sm: 2 } }}>
+              <DataGrid
+                rows={rows}
+                columns={columns}
+                loading={loading}
+                autoHeight
+                disableRowSelectionOnClick
+                processRowUpdate={processRowUpdate}
+                onProcessRowUpdateError={handleProcessRowUpdateError}
+                sx={{
+                  border: 'none',
+                  '& .MuiDataGrid-columnHeaders': { bgcolor: 'grey.100', fontWeight: 'bold' },
+                  '& .static-cell': { bgcolor: 'grey.50', fontWeight: 500 },
+                  '& .exam-cell': { bgcolor: 'blue.50' },
+                  '& .calculated-cell': { bgcolor: 'grey.200', fontWeight: 600 },
+                  '& .final-grade': { bgcolor: 'primary.lighter', color: 'primary.darker', fontWeight: 700 }
+                }}
+              />
+            </Box>
+          </Card>
+        </Box>
+      </Fade>
+    )}
+
+    {/* === DIALOG TAMBAH PENILAIAN === */}
+    <Dialog open={openAddDialog} onClose={handleCloseAddDialog} fullWidth maxWidth="xs">
+      <DialogTitle>Tambah Penilaian Harian ({selectedMapel})</DialogTitle>
+      <DialogContent>
+        <TextField
+          autoFocus
+          fullWidth
+          label="Nama Penilaian"
+          value={newAssignmentName}
+          onChange={(e) => setNewAssignmentName(e.target.value)}
+          sx={{ mt: 2 }}
+          placeholder="Cth: Tugas Tema 1, UH Bab 2"
+        />
+      </DialogContent>
+      <DialogActions sx={{ p: 2 }}>
+        <Button onClick={handleCloseAddDialog}>Batal</Button>
+        <Button onClick={handleSaveNewAssignment} disabled={!newAssignmentName.trim()} variant="contained">
+          Simpan
+        </Button>
+      </DialogActions>
+    </Dialog>
+
+    {/* === SNACKBAR === */}
+    <Snackbar
+      open={snackbar.open}
+      autoHideDuration={4000}
+      onClose={handleCloseSnackbar}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+    >
+      <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+        {snackbar.message}
+      </Alert>
+    </Snackbar>
+  </Box>
+);
+
 };
 
 export default HalamanNilaiSiswa;
