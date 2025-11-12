@@ -33,18 +33,44 @@ const getTodayDate = () => {
 };
 
 // === Mock Data ===
-const mockSiswa = [
-  { id: 'S-001', nis: '102030', nama: 'Budi Santoso' },
-  { id: 'S-002', nis: '102031', nama: 'Ani Yudhoyono' },
-  { id: 'S-003', nis: '102032', nama: 'Charlie van Houten' },
-  { id: 'S-004', nis: '102033', nama: 'Dewi Lestari' },
-  { id: 'S-005', nis: '102034', nama: 'Eka Kurniawan' }
-];
+// Data siswa dipetakan berdasarkan kelas
+const mockSiswaByKelas = {
+  '10A': [
+    { id: 'S-001', nis: '102030', nama: 'Budi Santoso' },
+    { id: 'S-002', nis: '102031', nama: 'Ani Yudhoyono' }
+  ],
+  '10B': [
+    { id: 'S-101', nis: '102040', nama: 'Charlie van Houten' },
+    { id: 'S-102', nis: '102041', nama: 'Dewi Lestari' }
+  ],
+  '11A': [
+    { id: 'S-201', nis: '102050', nama: 'Eka Kurniawan' }
+  ]
+};
+
+// Data absensi yang sudah ada (simulasi)
+const mockExistingAttendance = {
+  // 'YYYY-MM-DD'
+  '2025-11-12': { 
+    'S-002': 'S', // Ani Sakit
+    'S-101': 'A'  // Charlie Alpha
+  }
+};
+
 
 // === Komponen Utama ===
-const HalamanAbsensiHarian = () => {
+// Menerima props: role ('admin'/'guru') dan waliKelasInfo
+// Berikan objek sebagai default, sesuai yang diharapkan oleh kode Anda
+const HalamanAbsensiHarian = ({ role = 'guru', waliKelasInfo = { id: '10A', nama: 'Kelas 10A' } }) => {
+  
+  // Cek apakah user adalah Wali Kelas
+  const isWaliKelas = role === 'guru' && !!waliKelasInfo;
+
+  // === STATE ===
   const [selectedDate, setSelectedDate] = useState(getTodayDate());
+  // 'selectedKelas' akan di-set oleh Admin (dropdown) atau oleh Wali Kelas (otomatis)
   const [selectedKelas, setSelectedKelas] = useState('');
+  
   const [rows, setRows] = useState([]);
   const [dailyAttendance, setDailyAttendance] = useState({});
   const [loading, setLoading] = useState(false);
@@ -54,28 +80,73 @@ const HalamanAbsensiHarian = () => {
     severity: 'success'
   });
 
+
+  // === EFEK (LOGIKA OTOMATIS GURU) ===
+
+  // Efek 1: Set kelas untuk Wali Kelas secara otomatis saat komponen dimuat
+  useEffect(() => {
+    if (isWaliKelas) {
+      // Asumsi waliKelasInfo memiliki { id: '10A', nama: '10A' }
+      setSelectedKelas(waliKelasInfo.id); 
+    }
+  }, [isWaliKelas, waliKelasInfo]);
+
+  // Efek 2: Muat data untuk Wali Kelas secara otomatis saat tanggal ATAU kelas (dari Efek 1) berubah
+  useEffect(() => {
+    // Hanya jalankan jika dia Wali Kelas dan 'selectedKelas' sudah di-set
+    if (isWaliKelas && selectedKelas) {
+      handleTampilkan();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isWaliKelas, selectedKelas, selectedDate]); // Muat ulang jika tanggal berubah
+  
+
   // === Handler ===
+  
+  // Fungsi 'handleTampilkan' sekarang digunakan oleh:
+  // 1. Admin (via tombol)
+  // 2. Wali Kelas (via useEffect)
   const handleTampilkan = () => {
     if (!selectedKelas) {
-      setSnackbar({
-        open: true,
-        message: 'Silakan pilih kelas terlebih dahulu.',
-        severity: 'warning'
-      });
+      if (!isWaliKelas) { // Hanya tampilkan error untuk Admin, Guru masih loading
+        setSnackbar({
+          open: true,
+          message: 'Silakan pilih kelas terlebih dahulu.',
+          severity: 'warning'
+        });
+      }
       return;
     }
+    
     setLoading(true);
     setTimeout(() => {
-      setRows(mockSiswa);
+      // Ambil daftar siswa berdasarkan 'selectedKelas'
+      const siswaDiKelas = mockSiswaByKelas[selectedKelas] || [];
+      setRows(siswaDiKelas);
+      
       const data = {};
-      mockSiswa.forEach((s) => (data[s.id] = 'H')); // default hadir semua
+      const existingData = mockExistingAttendance[selectedDate] || {};
+      
+      siswaDiKelas.forEach((s) => {
+        // Cek apakah sudah ada data absensi di tanggal ini
+        if (existingData[s.id]) {
+          data[s.id] = existingData[s.id];
+        } else {
+          data[s.id] = 'H'; // Default hadir
+        }
+      });
+      
       setDailyAttendance(data);
       setLoading(false);
-      setSnackbar({
-        open: true,
-        message: `Data absensi kelas ${selectedKelas} tanggal ${selectedDate} dimuat.`,
-        severity: 'success'
-      });
+      
+      // Hanya tampilkan notifikasi jika BUKAN loading otomatis (Admin)
+      if (!isWaliKelas) {
+        setSnackbar({
+          open: true,
+          message: `Data absensi kelas ${selectedKelas} tanggal ${selectedDate} dimuat.`,
+          severity: 'success'
+        });
+      }
     }, 800);
   };
 
@@ -162,6 +233,10 @@ const HalamanAbsensiHarian = () => {
     <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 2 } }}>
       {/* FILTER */}
       <Card sx={{ mb: 1, p: 2 }}>
+        {/*
+          CATATAN: Tetap menggunakan 'Grid size' sesuai permintaan Anda. 
+          Prop 'spacing={2}' pada item Grid kedua tidak valid dan akan diabaikan oleh MUI.
+        */}
         <Grid container spacing={2} alignItems="center">
           <Grid size={{ xs: 6, sm: 6, md: 2 }}>
             <TextField
@@ -174,25 +249,51 @@ const HalamanAbsensiHarian = () => {
               InputLabelProps={{ shrink: true }}
             />
           </Grid>
-          <Grid size={{ xs: 6, sm: 6, md: 2 }} spacing={2}>
-            <FormControl fullWidth size="small" required>
-              <InputLabel>Pilih Kelas</InputLabel>
-              <Select value={selectedKelas} label="Pilih Kelas" onChange={(e) => setSelectedKelas(e.target.value)}>
-                <MenuItem value="10A">10A</MenuItem>
-                <MenuItem value="10B">10B</MenuItem>
-                <MenuItem value="11A">11A</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-            <Button fullWidth variant="contained" startIcon={<PageviewIcon />} onClick={handleTampilkan}>
-              Tampilkan
-            </Button>
-          </Grid>
+
+          {/* --- KONDISI ROLE DIMULAI --- */}
+          {isWaliKelas ? (
+            // TAMPILAN GURU/WALI KELAS (Read-only TextField)
+            <Grid size={{ xs: 6, sm: 6, md: 2 }}>
+              <TextField
+                label="Kelas Anda"
+                size="small"
+                fullWidth
+                value={waliKelasInfo.nama} // Asumsi props: { id: '10A', nama: '10A' }
+                InputProps={{ readOnly: true }}
+                sx={{ '& .MuiInputBase-input': { fontWeight: 600, color: 'primary.main' } }}
+              />
+            </Grid>
+          ) : (
+            // TAMPILAN ADMIN (Dropdown)
+            <Grid size={{ xs: 6, sm: 6, md: 2 }} spacing={2}> {/* Tetap 'size' & 'spacing' */}
+              <FormControl fullWidth size="small" required>
+                <InputLabel>Pilih Kelas</InputLabel>
+                <Select value={selectedKelas} label="Pilih Kelas" onChange={(e) => setSelectedKelas(e.target.value)}>
+                  {/* Di aplikasi nyata, Anda akan fetch daftar kelas ini */}
+                  <MenuItem value="10A">10A</MenuItem>
+                  <MenuItem value="10B">10B</MenuItem>
+                  <MenuItem value="11A">11A</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          )}
+          {/* --- KONDISI ROLE SELESAI --- */}
+          
+
+          {/* Tombol Tampilkan hanya untuk Admin */}
+          {!isWaliKelas && (
+            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+              <Button fullWidth variant="contained" startIcon={<PageviewIcon />} onClick={handleTampilkan}>
+                Tampilkan
+              </Button>
+            </Grid>
+          )}
+
         </Grid>
       </Card>
 
       {/* DATA GRID */}
+      {/* Cek 'rows.length > 0' untuk menampilkan tabel */}
       {rows.length > 0 && (
         <Fade in={true}>
           <Card>

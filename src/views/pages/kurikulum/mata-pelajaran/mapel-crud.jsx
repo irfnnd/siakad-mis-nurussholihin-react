@@ -172,7 +172,7 @@ const MapelCRUD_SD = () => {
             justifyContent="space-between"
         >
             {/* Bagian kiri: Pencarian & Filter */}
-            <Grid fullWidth size={{xs: 12, sm: 6, md:8}}>
+            <Grid fullWidth size={{xs: 12, sm: 6, md:7}}>
             <TextField
                 fullWidth
                 size="small"
@@ -188,7 +188,7 @@ const MapelCRUD_SD = () => {
                 }}
             />
             </Grid>
-            <Grid size={{ xs: 7, sm: 6, md: 2 }}>
+            <Grid size={{ xs: 7, sm: 6, md: 3 }}>
             <FormControl fullWidth size="small">
                 <InputLabel>Filter Kelompok</InputLabel>
                 <Select

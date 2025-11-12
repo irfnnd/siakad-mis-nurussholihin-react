@@ -345,10 +345,10 @@ const PegawaiCRUD = () => {
         <Box component="form" onSubmit={handleFormSubmit}>
           <DialogContent sx={{ pt: 2 }}>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{xs:12, sm:6, md:4}}>
                 <TextField name="nama" label="Nama Lengkap" defaultValue={selectedPegawai?.nama || ''} fullWidth required />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{xs:12, sm:6, md:4}}>
                 <TextField
                   name="nip"
                   label="nip / ID Pegawai"
@@ -358,10 +358,10 @@ const PegawaiCRUD = () => {
                   disabled={isEditMode}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{xs:12, sm:6, md:4}}>
                 <TextField name="jabatan" label="Jabatan" defaultValue={selectedPegawai?.jabatan || ''} fullWidth required />
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Jenis Kelamin</InputLabel>
                   <Select name="jenisKelamin" label="Jenis Kelamin" defaultValue={selectedPegawai?.jenisKelamin || ''}>
@@ -370,7 +370,7 @@ const PegawaiCRUD = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
                   name="tanggalLahir"
                   label="Tanggal Lahir"
@@ -381,7 +381,7 @@ const PegawaiCRUD = () => {
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Agama</InputLabel>
                   <Select name="agama" label="Agama" defaultValue={selectedPegawai?.agama || ''}>
@@ -393,13 +393,13 @@ const PegawaiCRUD = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{xs:12, sm:6, md:4}}>
                 <TextField name="email" label="Email" type="email" defaultValue={selectedPegawai?.email || ''} fullWidth required />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{xs:12, sm:6, md:4}}>
                 <TextField name="telepon" label="Telepon" defaultValue={selectedPegawai?.telepon || ''} fullWidth required />
               </Grid>
-              <Grid size={{ xs: 7, md: 6 }}>
+              <Grid size={{ xs: 7, md: 4 }}>
                 <TextField
                   name="tanggalMasuk"
                   label="Tanggal Masuk"
@@ -410,7 +410,7 @@ const PegawaiCRUD = () => {
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid size={{ xs: 5, md: 6 }}>
+              <Grid size={{ xs: 5, md: 4 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Status</InputLabel>
                   <Select name="status" label="Status" defaultValue={selectedPegawai?.status || 'Aktif'}>
@@ -420,7 +420,7 @@ const PegawaiCRUD = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{xs:12, sm:12, md:8}}>
                 <TextField name="alamat" label="Alamat" defaultValue={selectedPegawai?.alamat || ''} fullWidth multiline rows={3} />
               </Grid>
             </Grid>
@@ -451,25 +451,25 @@ const PegawaiCRUD = () => {
                 <Chip label={selectedPegawai.jabatan} color="primary" sx={{ mt: 1 }} />
               </Box>
               <Grid container spacing={2}>
-                <Grid item xs={6}>
+                <Grid size={{xs:6, sm:4, md:6}}>
                   <Typography variant="body2" color="text.secondary">
                     nip
                   </Typography>
                   <Typography>{selectedPegawai.nip}</Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{xs:6, sm:4, md:6}}>
                   <Typography variant="body2" color="text.secondary">
                     Status
                   </Typography>
                   <Chip label={selectedPegawai.status} size="small" color={selectedPegawai.status === 'Aktif' ? 'success' : 'error'} />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{xs:6, sm:4, md:6}}>
                   <Typography variant="body2" color="text.secondary">
                     Email
                   </Typography>
                   <Typography>{selectedPegawai.email}</Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{xs:6, sm:4, md:6}}>
                   <Typography variant="body2" color="text.secondary">
                     Telepon
                   </Typography>

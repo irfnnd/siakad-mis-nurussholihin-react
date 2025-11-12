@@ -214,7 +214,6 @@ const HalamanManajemenPengguna = () => {
           
           {/* Grup Filter */}
           <Grid size={{ xs: 12, sm: 8, md: 6 }}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <TextField
                 fullWidth
                 size="small"
@@ -230,6 +229,8 @@ const HalamanManajemenPengguna = () => {
                   ),
                 }}
               />
+            </Grid>
+            <Grid size={{xs:6, sm:8, md:3}}>
               <FormControl fullWidth size="small">
                 <InputLabel>Filter Role</InputLabel>
                 <Select
@@ -244,18 +245,17 @@ const HalamanManajemenPengguna = () => {
                   <MenuItem value="Siswa">Siswa</MenuItem>
                 </Select>
               </FormControl>
-            </Stack>
           </Grid>
           
           {/* Tombol Tambah Pengguna */}
-          <Grid size={{ xs: 12, sm: 4, md: 3 }}>
+          <Grid size={{ xs: 6, sm: 4, md: 3 }}>
             <Button 
               fullWidth 
               variant="contained" 
               startIcon={<AddIcon />}
               onClick={handleClickAdd}
             >
-              Tambah Pengguna
+              Tambah
             </Button>
           </Grid>
         </Grid>
