@@ -1,22 +1,24 @@
 import { lazy } from 'react';
 
 // project imports
-import MainLayout from 'layouts/MainLayout';
 import Loadable from 'components/Loadable';
-// pages
-const HalamanManajemenPengguna = Loadable(lazy(() => import('views/pages/manajemen-pengguna/manajemen-pengguna')));
-// utils
+import MinimalLayout from 'layouts/minimalLayout';
 
-// ==============================|| MAIN ROUTES ||============================== //
+// pages
+const LoginPage = Loadable(lazy(() => import('views/auth/Login')));
+
+// ==============================|| PAGES ROUTES ||============================== //
 
 const AuthRoutes = {
   path: '/auth',
-  element: <MainLayout />,
+  element: <MinimalLayout />,
   children: [
-    {
-      path: 'manajemen-pengguna',
-      element: <HalamanManajemenPengguna />
-    },
+        {
+          path: 'login',
+          element: <LoginPage />
+        },
+
   ],
 };
+
 export default AuthRoutes;

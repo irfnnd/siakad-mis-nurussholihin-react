@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 // material-ui
 import Button from '@mui/material/Button';
@@ -8,17 +8,18 @@ import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from '@mui/material/InputLabel';
-import Link from '@mui/material/Link';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
 
 // third party
 import { useForm } from 'react-hook-form';
 
 // project imports
-import { emailSchema, passwordSchema } from 'utils/validationSchema';
+import { authService } from '../../services/authService';
 
 // assets
 import Visibility from '@mui/icons-material/Visibility';
@@ -28,62 +29,151 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 export default function AuthLogin({ inputSx }) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   // Initialize react-hook-form
   const {
     register,
+    handleSubmit,
     formState: { errors }
   } = useForm();
 
+  // Handle form submission
+  const onSubmit = async (data) => {
+    setLoading(true);
+    setError('');
+
+    try {
+      console.log('Attempting login with:', data);
+      
+      const result = await authService.login(data.username, data.password);
+      
+      console.log('Login result:', result);
+      
+      if (result.success) {
+        console.log('Login successful, redirecting to dashboard...');
+        // Redirect to dashboard
+        navigate('/dashboard', { replace: true });
+      } else {
+        setError(result.message || 'Login gagal');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error.response?.data?.message || 'Terjadi kesalahan saat menghubungi server');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Simple validation schema for react-hook-form
+  const validationSchema = {
+    username: {
+      required: 'Username harus diisi',
+      minLength: {
+        value: 3,
+        message: 'Username minimal 3 karakter'
+      }
+    },
+    password: {
+      required: 'Password harus diisi',
+      minLength: {
+        value: 6,
+        message: 'Password minimal 6 karakter'
+      }
+    }
+  };
+
   return (
-    <form>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <Stack sx={{ gap: 3 }}>
+        {/* Error Alert */}
+        {error && (
+          <Alert severity="error" sx={{ width: '100%' }}>
+            {error}
+          </Alert>
+        )}
+
+        {/* Username Field */}
         <Box>
           <TextField
-            id="outlined-basic"
+            id="username"
             variant="outlined"
-            {...register('email', emailSchema)}
-            placeholder="example@materially.com"
+            {...register('username', validationSchema.username)}
+            placeholder="Masukkan username"
             fullWidth
-            label="Email Address / Username"
-            error={Boolean(errors.email)}
+            label="Username"
+            error={Boolean(errors.username)}
+            disabled={loading}
             sx={inputSx}
+            autoComplete="username"
           />
-          {errors.email?.message && <FormHelperText error>{errors.email.message}</FormHelperText>}
+          {errors.username?.message && (
+            <FormHelperText error>{errors.username.message}</FormHelperText>
+          )}
         </Box>
 
+        {/* Password Field */}
         <Box>
           <FormControl fullWidth error={Boolean(errors.password)}>
-            <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
+            <InputLabel htmlFor="password">Password</InputLabel>
             <OutlinedInput
-              {...register('password', passwordSchema)}
-              id="outlined-adornment-password"
+              {...register('password', validationSchema.password)}
+              id="password"
               type={isPasswordVisible ? 'text' : 'password'}
               name="password"
               label="Password"
-              placeholder="Enter your password"
+              placeholder="Masukkan password"
+              disabled={loading}
+              autoComplete="current-password"
               endAdornment={
-                <InputAdornment position="end" sx={{ cursor: 'pointer' }} onClick={() => setIsPasswordVisible(!isPasswordVisible)}>
+                <InputAdornment 
+                  position="end" 
+                  sx={{ cursor: 'pointer' }} 
+                  onClick={() => !loading && setIsPasswordVisible(!isPasswordVisible)}
+                >
                   {isPasswordVisible ? <Visibility /> : <VisibilityOff />}
                 </InputAdornment>
               }
               sx={inputSx}
             />
           </FormControl>
-          <Stack
-            direction="row"
-            sx={{ alignItems: 'flex-start', justifyContent: errors.password ? 'space-between' : 'flex-end', width: 1, gap: 1 }}
-          >
-            {errors.password?.message && <FormHelperText error>{errors.password.message}</FormHelperText>}
-          </Stack>
+          {errors.password?.message && (
+            <FormHelperText error>{errors.password.message}</FormHelperText>
+          )}
         </Box>
       </Stack>
 
-      <Button type="submit" variant="contained" fullWidth sx={{ minWidth: 120, mt: { xs: 2, sm: 3 }, '& .MuiButton-endIcon': { ml: 1 } }}>
-        Sign In
+      {/* Submit Button */}
+      <Button 
+        type="submit" 
+        variant="contained" 
+        fullWidth 
+        disabled={loading}
+        sx={{ 
+          minWidth: 120, 
+          mt: { xs: 2, sm: 3 },
+          height: '48px',
+          '& .MuiButton-endIcon': { ml: 1 }
+        }}
+        startIcon={loading && <CircularProgress size={20} color="inherit" />}
+      >
+        {loading ? 'Loading...' : 'Login'}
       </Button>
+
+      {/* Demo Credentials Info */}
+      <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+        <FormHelperText sx={{ textAlign: 'center', color: 'text.secondary' }}>
+          <strong>Demo Credentials:</strong><br />
+          Username: admin<br />
+          Password: password123
+        </FormHelperText>
+      </Box>
     </form>
   );
 }
 
-AuthLogin.propTypes = { inputSx: PropTypes.any };
+AuthLogin.propTypes = { 
+  inputSx: PropTypes.any 
+};
