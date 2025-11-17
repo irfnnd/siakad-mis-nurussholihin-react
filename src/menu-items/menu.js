@@ -6,10 +6,14 @@ import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import PrintIcon from '@mui/icons-material/Print';
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import NoteAltIcon from '@mui/icons-material/NoteAlt';
-// (Tambahkan ikon lain yang Anda perlukan)
+// --- Ikon Baru Ditambahkan ---
+import School from '@mui/icons-material/School';
+import Person from '@mui/icons-material/Person';
+import MeetingRoom from '@mui/icons-material/MeetingRoom';
+import AutoStories from '@mui/icons-material/AutoStories';
+import Schedule from '@mui/icons-material/Schedule';
 
 // --- OBJEK IKON ---
-// (Anda sepertinya sudah memiliki ini di file Anda, pastikan saja ikon baru ada)
 const icons = {
   IconDashboard: Dashboard,
   IconUsersGroup: Groups,
@@ -17,19 +21,23 @@ const icons = {
   IconCalendar: CalendarMonth,
   IconPrint: PrintIcon,
   IconChecklist: ChecklistIcon,
-  IconNoteAlt: NoteAltIcon
-  // (Pastikan semua ikon yang Anda gunakan di menu ada di sini)
+  IconNoteAlt: NoteAltIcon,
+  // --- Ikon Baru Ditambahkan ---
+  IconSchool: School,
+  IconUser: Person,
+  IconRoom: MeetingRoom,
+  IconNotebook: AutoStories,
+  IconSchedule: Schedule
 };
 
 // ==============================|| MENU ITEMS ||============================== //
-// Setiap grup menu sekarang memiliki properti 'roles'
 
 // Dashboard
 const dashboard = {
   id: 'dashboard',
   title: 'Dashboard',
   type: 'group',
-  roles: ['admin', 'guru'], // <-- BISA DILIHAT OLEH ADMIN & GURU
+  roles: ['admin', 'guru'],
   children: [
     {
       id: 'overview',
@@ -49,25 +57,21 @@ const manajemenData = {
   type: 'group',
   roles: ['admin'], // <-- HANYA BISA DILIHAT OLEH ADMIN
   children: [
+    // --- PERUBAHAN: 'type: collapse' dihapus ---
+    // Item sekarang langsung di bawah 'group'
     {
-      id: 'data-master',
-      title: 'Data Master',
-      type: 'collapse',
-      icon: icons.IconUsersGroup,
-      children: [
-        {
-          id: 'data-siswa',
-          title: 'Data Siswa',
-          type: 'item',
-          url: '/data/siswa'
-        },
-        {
-          id: 'data-pegawai',
-          title: 'Data Pegawai',
-          type: 'item',
-          url: '/data/pegawai'
-        }
-      ]
+      id: 'data-siswa',
+      title: 'Data Siswa',
+      type: 'item',
+      url: '/data/siswa',
+      icon: icons.IconSchool // <-- Ikon ditambahkan
+    },
+    {
+      id: 'data-pegawai',
+      title: 'Data Pegawai',
+      type: 'item',
+      url: '/data/pegawai',
+      icon: icons.IconUser // <-- Ikon ditambahkan
     }
   ]
 };
@@ -77,6 +81,7 @@ const akademik = {
   id: 'manajemen-akademik',
   title: 'Manajemen Akademik',
   type: 'group',
+  // --- PERUBAHAN: 'roles' disesuaikan dengan komentar Anda ---
   roles: ['guru'], // <-- BISA DILIHAT OLEH ADMIN & GURU
   children: [
     {
@@ -110,31 +115,28 @@ const kurikulum = {
   type: 'group',
   roles: ['admin'], // <-- HANYA BISA DILIHAT OLEH ADMIN
   children: [
+    // --- PERUBAHAN: 'type: collapse' dihapus ---
+    // Item sekarang langsung di bawah 'group'
     {
-      id: 'manajemen-kurikulum',
-      title: 'Manajemen Kurikulum',
-      type: 'collapse',
-      icon: icons.IconCalendar,
-      children: [
-        {
-          id: 'data-kelas',
-          title: 'Data Kelas',
-          type: 'item',
-          url: '/kurikulum/data-kelas'
-        },
-        {
-          id: 'mata-pelajaran',
-          title: 'Mata Pelajaran',
-          type: 'item',
-          url: '/kurikulum/mata-pelajaran'
-        },
-        {
-          id: 'jadwal-pelajaran',
-          title: 'Jadwal Pelajaran',
-          type: 'item',
-          url: '/kurikulum/jadwal-pelajaran'
-        }
-      ]
+      id: 'data-kelas',
+      title: 'Data Kelas',
+      type: 'item',
+      url: '/kurikulum/data-kelas',
+      icon: icons.IconRoom // <-- Ikon ditambahkan
+    },
+    {
+      id: 'mata-pelajaran',
+      title: 'Mata Pelajaran',
+      type: 'item',
+      url: '/kurikulum/mata-pelajaran',
+      icon: icons.IconNotebook // <-- Ikon ditambahkan
+    },
+    {
+      id: 'jadwal-pelajaran',
+      title: 'Jadwal Pelajaran',
+      type: 'item',
+      url: '/kurikulum/jadwal-pelajaran',
+      icon: icons.IconSchedule // <-- Ikon ditambahkan
     }
   ]
 };
@@ -144,7 +146,7 @@ const manajemenUser = {
   id: 'manajemen-user',
   title: 'Manajemen User',
   type: 'group',
-  roles: ['admin'], // <-- HANYA BISA DILIHAT OLEH ADMIN
+  roles: ['admin'],
   children: [
     {
       id: 'data-user',
@@ -157,10 +159,8 @@ const manajemenUser = {
 };
 
 // ==============================|| EKSPOR MENU UTAMA ||============================== //
-// File Anda mengekspor objek 'items' di dalam 'menuItems'
 const menuItems = {
   items: [dashboard, akademik, kurikulum, manajemenData, manajemenUser]
 };
 
-// Ini akan diekspor oleh file 'index.js' Anda
 export default menuItems;
