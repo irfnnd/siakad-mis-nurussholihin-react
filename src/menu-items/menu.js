@@ -1,60 +1,35 @@
-// ==============================|| IMPORT IKON MATERIAL-UI ||============================== //
+// --- IMPORT IKON ---
 import Dashboard from '@mui/icons-material/Dashboard';
 import Groups from '@mui/icons-material/Groups';
-import Person from '@mui/icons-material/Person';
 import PersonAdd from '@mui/icons-material/PersonAdd';
-import Security from '@mui/icons-material/Security';
-import Work from '@mui/icons-material/Work';
-import MenuBook from '@mui/icons-material/MenuBook';
-import Assessment from '@mui/icons-material/Assessment';
-import PlaylistAddCheck from '@mui/icons-material/PlaylistAddCheck';
-import Campaign from '@mui/icons-material/Campaign';
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
-import MeetingRoom from '@mui/icons-material/MeetingRoom';
-import AutoStories from '@mui/icons-material/AutoStories';
-import Schedule from '@mui/icons-material/Schedule';
-import Language from '@mui/icons-material/Language';
-import School from '@mui/icons-material/School';
-import Article from '@mui/icons-material/Article';
-import PhotoLibrary from '@mui/icons-material/PhotoLibrary';
-import PageviewIcon from '@mui/icons-material/Pageview';
 import PrintIcon from '@mui/icons-material/Print';
-import PersonIcon from '@mui/icons-material/Person';
-import SchoolIcon from '@mui/icons-material/School';
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import NoteAltIcon from '@mui/icons-material/NoteAlt';
-import SaveIcon from '@mui/icons-material/Save';
+// (Tambahkan ikon lain yang Anda perlukan)
 
-// ==============================|| PENYIMPANAN IKON DALAM OBJEK ||============================== //
+// --- OBJEK IKON ---
+// (Anda sepertinya sudah memiliki ini di file Anda, pastikan saja ikon baru ada)
 const icons = {
   IconDashboard: Dashboard,
   IconUsersGroup: Groups,
-  IconUser: Person,
   IconUserAdd: PersonAdd,
-  IconSecurity: Security,
-  IconBriefcase: Work,
-  IconBook: MenuBook,
-  IconReport: Assessment,
-  IconChecklist: PlaylistAddCheck,
-  IconSpeakerphone: Campaign,
   IconCalendar: CalendarMonth,
-  IconRoom: MeetingRoom,
-  IconNotebook: AutoStories,
-  IconSchedule: Schedule,
-  IconLanguage: Language,
-  IconSchool: School,
-  IconArticle: Article,
-  IconPhoto: PhotoLibrary,
-
+  IconPrint: PrintIcon,
+  IconChecklist: ChecklistIcon,
+  IconNoteAlt: NoteAltIcon
+  // (Pastikan semua ikon yang Anda gunakan di menu ada di sini)
 };
 
 // ==============================|| MENU ITEMS ||============================== //
+// Setiap grup menu sekarang memiliki properti 'roles'
 
 // Dashboard
 const dashboard = {
   id: 'dashboard',
   title: 'Dashboard',
   type: 'group',
+  roles: ['admin', 'guru'], // <-- BISA DILIHAT OLEH ADMIN & GURU
   children: [
     {
       id: 'overview',
@@ -72,6 +47,7 @@ const manajemenData = {
   id: 'manajemen-data',
   title: 'Manajemen Data',
   type: 'group',
+  roles: ['admin'], // <-- HANYA BISA DILIHAT OLEH ADMIN
   children: [
     {
       id: 'data-master',
@@ -101,27 +77,28 @@ const akademik = {
   id: 'manajemen-akademik',
   title: 'Manajemen Akademik',
   type: 'group',
+  roles: ['guru'], // <-- BISA DILIHAT OLEH ADMIN & GURU
   children: [
     {
       id: 'input-nilai',
       title: 'Nilai Siswa',
       type: 'item',
       url: '/akademik/nilai-siswa',
-      icon: NoteAltIcon // <-- Ikon sub-menu
+      icon: icons.IconNoteAlt 
     },
     {
       id: 'e-rapor',
       title: 'Rapor Siswa',
       type: 'item',
       url: '/akademik/rapor-siswa',
-      icon: PrintIcon // <-- Ikon sub-menu
+      icon: icons.IconPrint
     },
     {
       id: 'absensi',
       title: 'Absensi Siswa',
       type: 'item',
       url: '/akademik/absensi-siswa',
-      icon: ChecklistIcon // <-- Ikon sub-menu
+      icon: icons.IconChecklist
     }
   ]
 };
@@ -131,6 +108,7 @@ const kurikulum = {
   id: 'kurikulum',
   title: 'Kurikulum',
   type: 'group',
+  roles: ['admin'], // <-- HANYA BISA DILIHAT OLEH ADMIN
   children: [
     {
       id: 'manajemen-kurikulum',
@@ -166,20 +144,23 @@ const manajemenUser = {
   id: 'manajemen-user',
   title: 'Manajemen User',
   type: 'group',
+  roles: ['admin'], // <-- HANYA BISA DILIHAT OLEH ADMIN
   children: [
     {
-          id: 'data-user',
-          title: 'Data User',
-          type: 'item',
-          url: '/auth/manajemen-pengguna',
-          icon: icons.IconUserAdd
+      id: 'data-user',
+      title: 'Data User',
+      type: 'item',
+      url: '/auth/manajemen-pengguna',
+      icon: icons.IconUserAdd
     }
   ]
 };
 
 // ==============================|| EKSPOR MENU UTAMA ||============================== //
+// File Anda mengekspor objek 'items' di dalam 'menuItems'
 const menuItems = {
   items: [dashboard, akademik, kurikulum, manajemenData, manajemenUser]
 };
 
+// Ini akan diekspor oleh file 'index.js' Anda
 export default menuItems;

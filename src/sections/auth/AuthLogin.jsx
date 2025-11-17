@@ -49,9 +49,6 @@ export default function AuthLogin({ inputSx }) {
       console.log('Attempting login with:', data);
       
       const result = await authService.login(data.username, data.password);
-      
-      console.log('Login result:', result);
-      
       if (result.success) {
         console.log('Login successful, redirecting to dashboard...');
         // Redirect to dashboard

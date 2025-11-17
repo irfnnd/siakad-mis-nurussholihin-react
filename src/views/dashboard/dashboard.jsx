@@ -17,6 +17,8 @@ import {
   Divider
 } from '@mui/material';
 
+import useAuth from 'utils/useAuth'; 
+
 // Import Ikon (Pastikan @mui/icons-material sudah terinstal)
 import { 
   Group as GroupIcon, 
@@ -39,18 +41,15 @@ import {
 } from '@mui/icons-material';
 
 // --- KOMPONEN UTAMA DASHBOARD ---
-const Dashboard = ({ role }) => {
+const Dashboard = () => {
+  const { role } = useAuth(); // 1. Dapatkan role pengguna
+  // 4. Tampilkan dashboard yang sesuai berdasarkan role
   if (role === 'admin') {
     return <AdminDashboard />;
   }
   if (role === 'guru') {
     return <GuruDashboard />;
   }
-  
-  // Fallback jika role tidak dikenali
-  return (
-    <GuruDashboard />
-  );
 };
 
 

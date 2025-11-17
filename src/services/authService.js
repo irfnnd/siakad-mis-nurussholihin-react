@@ -9,15 +9,25 @@ export const authService = {
         password
       });
       
+      // 'response.data' adalah seluruh objek dari Postman
+      // { success: true, message: "...", data: { ... } }
+
       if (response.data.success) {
+        
+        // --- PERBAIKAN DI SINI ---
+        // Ambil 'token' dan 'user' dari dalam 'response.data.data'
+        const token = response.data.data.token;
+        const user = response.data.data.user;
+        // --- BATAS PERBAIKAN ---
+
         // Simpan token dan user data di localStorage
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
         
         return {
           success: true,
-          user: response.data.user,
-          token: response.data.token
+          user: user,
+          token: token
         };
       } else {
         return {
