@@ -19,10 +19,10 @@ import MainCard from 'components/cards/MainCard';
 
 // assets
 import AccountCircleTwoToneIcon from '@mui/icons-material/AccountCircleTwoTone';
-import MeetingRoomTwoToneIcon from '@mui/icons-material/MeetingRoomTwoTone';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 
 const menuItems = [
-  { icon: <MeetingRoomTwoToneIcon />, label: 'Logout' }
+  { icon: <ExitToAppIcon />, label: 'Logout' }
 ];
 
 // ==============================|| PROFILE ||============================== //

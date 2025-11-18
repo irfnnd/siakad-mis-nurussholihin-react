@@ -47,7 +47,7 @@ export default function AuthLogin({ inputSx }) {
 
     try {
       console.log('Attempting login with:', data);
-      
+
       const result = await authService.login(data.username, data.password);
       if (result.success) {
         console.log('Login successful, redirecting to dashboard...');
@@ -84,7 +84,7 @@ export default function AuthLogin({ inputSx }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Stack sx={{ gap: 3 }}>
+      <Stack sx={{ gap: 3, mb: 2 }}>
         {/* Error Alert */}
         {error && (
           <Alert severity="error" sx={{ width: '100%' }}>
@@ -106,9 +106,7 @@ export default function AuthLogin({ inputSx }) {
             sx={inputSx}
             autoComplete="username"
           />
-          {errors.username?.message && (
-            <FormHelperText error>{errors.username.message}</FormHelperText>
-          )}
+          {errors.username?.message && <FormHelperText error>{errors.username.message}</FormHelperText>}
         </Box>
 
         {/* Password Field */}
@@ -125,9 +123,9 @@ export default function AuthLogin({ inputSx }) {
               disabled={loading}
               autoComplete="current-password"
               endAdornment={
-                <InputAdornment 
-                  position="end" 
-                  sx={{ cursor: 'pointer' }} 
+                <InputAdornment
+                  position="end"
+                  sx={{ cursor: 'pointer' }}
                   onClick={() => !loading && setIsPasswordVisible(!isPasswordVisible)}
                 >
                   {isPasswordVisible ? <Visibility /> : <VisibilityOff />}
@@ -136,20 +134,18 @@ export default function AuthLogin({ inputSx }) {
               sx={inputSx}
             />
           </FormControl>
-          {errors.password?.message && (
-            <FormHelperText error>{errors.password.message}</FormHelperText>
-          )}
+          {errors.password?.message && <FormHelperText error>{errors.password.message}</FormHelperText>}
         </Box>
       </Stack>
 
       {/* Submit Button */}
-      <Button 
-        type="submit" 
-        variant="contained" 
-        fullWidth 
+      <Button
+        type="submit"
+        variant="contained"
+        fullWidth
         disabled={loading}
-        sx={{ 
-          minWidth: 120, 
+        sx={{
+          minWidth: 120,
           mt: { xs: 2, sm: 3 },
           height: '48px',
           '& .MuiButton-endIcon': { ml: 1 }
@@ -160,17 +156,17 @@ export default function AuthLogin({ inputSx }) {
       </Button>
 
       {/* Demo Credentials Info */}
-      <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+      {/* <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
         <FormHelperText sx={{ textAlign: 'center', color: 'text.secondary' }}>
           <strong>Demo Credentials:</strong><br />
           Username: admin<br />
           Password: password123
         </FormHelperText>
-      </Box>
+      </Box> */}
     </form>
   );
 }
 
-AuthLogin.propTypes = { 
-  inputSx: PropTypes.any 
+AuthLogin.propTypes = {
+  inputSx: PropTypes.any
 };
