@@ -16,14 +16,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 // project imports
 import MainCard from 'components/cards/MainCard';
-
+import { authService } from '../../../services/authService';
 // assets
 import AccountCircleTwoToneIcon from '@mui/icons-material/AccountCircleTwoTone';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-
-const menuItems = [
-  { icon: <ExitToAppIcon />, label: 'Logout' }
-];
 
 // ==============================|| PROFILE ||============================== //
 
@@ -40,6 +36,17 @@ export default function Profile() {
   };
 
   const handleClickAway = () => setOpen(false);
+
+  // --- FUNGSI LOGOUT ---
+  const handleLogout = () => {
+    // Panggil service logout (ini akan menghapus token dan redirect)
+    authService.logout(); 
+  };
+
+const menuItems = [
+  { icon: <ExitToAppIcon />, label: 'Logout', action: handleLogout }
+];
+
 
   useEffect(() => {
     const index = menuItems.findIndex((item) => item.path && location.pathname.startsWith(item.path));
