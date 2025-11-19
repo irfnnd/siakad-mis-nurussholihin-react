@@ -56,6 +56,7 @@ const SiswaCRUD = () => {
   // State management
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
+  const [kelasOptions, setKelasOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openFormDialog, setOpenFormDialog] = useState(false);
   const [openDetailDialog, setOpenDetailDialog] = useState(false);
@@ -86,8 +87,31 @@ const SiswaCRUD = () => {
     }
   };
 
+  const fetchKelas = async () => {
+    try {
+      const response = await api.get('/kelas');
+
+      // Cek berbagai kemungkinan struktur response agar aman
+      // 1. Jika ada di response.data.data.kelas (Format standar pagination)
+      // 2. Jika ada di response.data.data (Format array langsung)
+      // 3. Jika ada di response.data (Format array paling dasar)
+      const dataKelas = response.data?.data?.kelas || response.data?.data || response.data || [];
+
+      // Pastikan yang kita set ke state adalah ARRAY
+      if (Array.isArray(dataKelas)) {
+        setKelasOptions(dataKelas);
+      } else {
+        console.warn('Data kelas yang diterima bukan array:', dataKelas);
+        setKelasOptions([]);
+      }
+    } catch (error) {
+      console.error('Error fetching kelas options:', error);
+    }
+  };
+
   useEffect(() => {
     fetchData();
+    fetchKelas(); // Ambil data kelas saat mount
   }, []);
 
   // Filter data di frontend
@@ -109,8 +133,27 @@ const SiswaCRUD = () => {
 
     if (selectedKelas !== 'Semua') {
       filtered = filtered.filter((student) => {
-        if (!student.kelas) return false;
-        const namaKelas = typeof student.kelas === 'string' ? student.kelas : student.kelas.nama_kelas;
+        const k = student.kelas;
+
+        // Jika data kosong/null, skip
+        if (!k) return false;
+
+        let namaKelas = '';
+
+        // Cek 1: Apakah Array? (Sesuai data backend terbaru)
+        if (Array.isArray(k)) {
+          // Ambil nama_kelas dari item pertama jika ada
+          namaKelas = k.length > 0 ? k[0].nama_kelas : '';
+        }
+        // Cek 2: Apakah Object tunggal? (Fallback)
+        else if (typeof k === 'object') {
+          namaKelas = k.nama_kelas || '';
+        }
+        // Cek 3: Apakah String? (Fallback)
+        else {
+          namaKelas = k;
+        }
+
         return namaKelas === selectedKelas;
       });
     }
@@ -266,13 +309,13 @@ const SiswaCRUD = () => {
       field: 'jenis_kelamin', // Sesuai JSON backend
       headerName: 'Jenis Kelamin',
       flex: 1,
-      minWidth: 50
+      minWidth: 120
     },
     {
       field: 'alamat', // Sesuai JSON backend
       headerName: 'Alamat',
       flex: 1,
-      minWidth: 50
+      minWidth: 200
     },
     {
       field: 'status',
@@ -314,7 +357,7 @@ const SiswaCRUD = () => {
         {/* Filter dan Pencarian */}
         <Card sx={{ mb: { xs: 1, sm: 1.5, md: 3 }, p: { xs: 1.5, sm: 1.5, md: 2 } }}>
           <Grid container spacing={{ xs: 1.5, sm: 1.5, md: 2 }} alignItems="center">
-            <Grid size={{ xs: 12, sm: 6, md: 5.8 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 4.2 }}>
               <TextField
                 fullWidth
                 size="small"
@@ -329,6 +372,20 @@ const SiswaCRUD = () => {
                   )
                 }}
               />
+            </Grid>
+            <Grid size={{ xs: 6, sm: 6, md: 1.6 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Filter Kelas</InputLabel>
+                <Select value={selectedKelas} label="Filter Kelas" onChange={(e) => setSelectedKelas(e.target.value)}>
+                  <MenuItem value="Semua">Semua Kelas</MenuItem>
+                  {/* MAPPING DATA KELAS DARI API */}
+                  {kelasOptions.map((kelas) => (
+                    <MenuItem key={kelas.id} value={kelas.nama_kelas}>
+                      {kelas.nama_kelas}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
             <Grid size={{ xs: 6, sm: 6, md: 1.6 }}>
               <FormControl fullWidth size="small">
@@ -359,7 +416,7 @@ const SiswaCRUD = () => {
                 Export
               </Button>
             </Grid>
-            <Grid size={{ xs: 6, sm: 6, md: 1.8 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 1.8 }}>
               <Button fullWidth variant="contained" startIcon={<AddIcon />} onClick={handleClickAdd}>
                 Tambah
               </Button>
@@ -447,21 +504,35 @@ const SiswaCRUD = () => {
                   <Select
                     name="kelas"
                     label="Kelas"
-                    // Handle defaultValue untuk string atau object
-                    defaultValue={
-                      selectedStudent?.kelas
-                        ? typeof selectedStudent.kelas === 'string'
-                          ? selectedStudent.kelas
-                          : selectedStudent.kelas.nama_kelas
-                        : ''
-                    }
+                    defaultValue={(() => {
+                      const k = selectedStudent?.kelas;
+
+                      // Cek null/undefined
+                      if (!k) return '';
+
+                      // Skenario 1: Array (Sesuai backend saat ini)
+                      if (Array.isArray(k)) {
+                        return k.length > 0 ? k[0].nama_kelas : '';
+                      }
+
+                      // Skenario 2: Object tunggal
+                      if (typeof k === 'object' && k !== null && k.nama_kelas) {
+                        return k.nama_kelas;
+                      }
+
+                      // Skenario 3: String biasa
+                      return typeof k === 'string' ? k : '';
+                    })()}
                   >
-                    <MenuItem value="10A">10A</MenuItem>
-                    <MenuItem value="10B">10B</MenuItem>
-                    <MenuItem value="11A">11A</MenuItem>
-                    <MenuItem value="11B">11B</MenuItem>
-                    <MenuItem value="12A">12A</MenuItem>
-                    <MenuItem value="12B">12B</MenuItem>
+                    <MenuItem value="">
+                      <em>Pilih Kelas</em>
+                    </MenuItem>
+                    {Array.isArray(kelasOptions) &&
+                      kelasOptions.map((kelas) => (
+                        <MenuItem key={kelas.id} value={kelas.nama_kelas}>
+                          {kelas.nama_kelas}
+                        </MenuItem>
+                      ))}
                   </Select>
                 </FormControl>
               </Grid>
