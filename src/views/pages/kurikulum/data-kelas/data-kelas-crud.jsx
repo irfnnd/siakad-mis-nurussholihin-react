@@ -215,7 +215,7 @@ const DataKelasCRUD = () => {
     { field: 'tingkat', headerName: 'Tingkat', width: 100, align: 'center', headerAlign: 'center' },
     { 
         field: 'siswa', // Sesuai JSON (Array)
-        headerName: 'Jml Siswa', 
+        headerName: 'Jumlah Siswa', 
         width: 130, 
         align: 'center', 
         headerAlign: 'center',
@@ -344,17 +344,33 @@ const DataKelasCRUD = () => {
               
               {/* Tingkat */}
               <Grid size={{ xs: 12, sm: 6, md: 6 }}>
-                <TextField 
+                {/* <TextField 
                     name="tingkat" 
                     label="Tingkat (1-6)" 
                     type="number"
                     defaultValue={selectedKelasData?.tingkat || ''} 
                     fullWidth required 
-                />
+                /> */}
+                
+                <FormControl fullWidth required>
+                    <InputLabel>Tingkat</InputLabel>
+                    <Select 
+                        name="tingkat" 
+                        label="Tingkat"
+                        defaultValue={selectedKelasData?.tingkat || ''}
+                    >
+                        <MenuItem value={1}>1</MenuItem>
+                        <MenuItem value={2}>2</MenuItem>
+                        <MenuItem value={3}>3</MenuItem>
+                        <MenuItem value={4}>4</MenuItem>
+                        <MenuItem value={5}>5</MenuItem>
+                        <MenuItem value={6}>6</MenuItem>
+                    </Select>
+                </FormControl>
               </Grid>
 
               {/* Wali Kelas (Dropdown dari API Pegawai) */}
-              <Grid size={{ xs: 12, sm: 12, md: 12 }}>
+              <Grid size={{ xs: 12, sm: 12, md: 9 }}>
                 <FormControl fullWidth required>
                     <InputLabel>Wali Kelas</InputLabel>
                     <Select 
@@ -372,7 +388,7 @@ const DataKelasCRUD = () => {
               </Grid>
               
               {/* Status */}
-              <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Status</InputLabel>
                   <Select name="status" label="Status" defaultValue={selectedKelasData?.status || 'Aktif'}>

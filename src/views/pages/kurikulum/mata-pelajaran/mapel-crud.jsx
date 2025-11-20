@@ -1,74 +1,71 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  Typography,
-  Grid,
-  IconButton,
-  Tooltip,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Card,
-  Chip,
-  Alert,
-  Snackbar,
-  InputAdornment,
+  Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField,
+  Typography, Grid, IconButton, Tooltip, Select, MenuItem, FormControl,
+  InputLabel, Card, Chip, Alert, Snackbar, InputAdornment, Fade, CircularProgress
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-
-// Import icons
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 
-// Data dummy untuk Mata Pelajaran tingkat SD
-const initialRows = [
-  { id: 1, kode_mapel: 'PAI-I', nama_mapel: 'Pendidikan Agama Islam', kelompok: 'Mata Pelajaran Umum', kkm: 75, status: 'Aktif' },
-  { id: 2, kode_mapel: 'MTK-IV', nama_mapel: 'Matematika', kelompok: 'Mata Pelajaran Umum', kkm: 70, status: 'Aktif' },
-  { id: 3, kode_mapel: 'TEMATIK-I', nama_mapel: 'Tematik Kelas 1', kelompok: 'Tematik Terpadu', kkm: 75, status: 'Aktif' },
-  { id: 4, kode_mapel: 'PJOK-V', nama_mapel: 'Pendidikan Jasmani', kelompok: 'Mata Pelajaran Umum', kkm: 72, status: 'Aktif' },
-  { id: 5, kode_mapel: 'MULOK-B-DAERAH', nama_mapel: 'Bahasa Daerah', kelompok: 'Muatan Lokal', kkm: 70, status: 'Nonaktif' },
-];
+// Import API Instance (Axios)
+import api from '../../../../services/api'; // Pastikan path ini benar
 
 const MapelCRUD_SD = () => {
-  // State management
+
   const [mapel, setMapel] = useState([]);
   const [filteredMapel, setFilteredMapel] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [openFormDialog, setOpenFormDialog] = useState(false);
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+
   const [selectedMapel, setSelectedMapel] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
+
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedKelompok, setSelectedKelompok] = useState('Semua');
 
-  // Simulasi pengambilan data
-  useEffect(() => {
-    setTimeout(() => {
-      setMapel(initialRows);
-      setFilteredMapel(initialRows);
+  // =============================
+  // 1. GET DATA DARI API (PERBAIKAN)
+  // =============================
+  const fetchMapel = async () => {
+    setLoading(true);
+    try {
+      // Gunakan instance api, bukan fetch
+      const response = await api.get('/mata-pelajaran');
+      
+      // Sesuaikan dengan struktur JSON backend Anda
+      // Contoh: response.data.data.mata_pelajaran atau response.data.data
+      const data = response.data?.data?.mata_pelajaran || response.data?.data || [];
+      
+      setMapel(data);
+      setFilteredMapel(data);
+    } catch (err) {
+      console.error("Error fetching mapel:", err);
+      setSnackbar({ open: true, message: "Gagal memuat data!", severity: "error" });
+    } finally {
       setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  };
 
-  // Filter data berdasarkan pencarian dan filter kelompok
+  useEffect(() => { fetchMapel(); }, []);
+
+  // =============================
+  // FILTER (SEARCH + KOLOM KELOMPOK)
+  // =============================
   useEffect(() => {
     let filtered = mapel;
 
     if (searchTerm) {
       filtered = filtered.filter(
         (m) =>
-          m.nama_mapel.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          m.kode_mapel.toLowerCase().includes(searchTerm.toLowerCase())
+          (m.nama_mapel && m.nama_mapel.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (m.kode_mapel && m.kode_mapel.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
     if (selectedKelompok !== 'Semua') {
@@ -77,7 +74,69 @@ const MapelCRUD_SD = () => {
     setFilteredMapel(filtered);
   }, [searchTerm, selectedKelompok, mapel]);
 
-  // Handler functions
+  // =============================
+  // TAMBAH & UPDATE DATA (PERBAIKAN)
+  // =============================
+  const handleFormSubmit = async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const body = {
+      kode_mapel: formData.get("kode_mapel"),
+      nama_mapel: formData.get("nama_mapel"),
+      kelompok: formData.get("kelompok"),
+      kkm: formData.get("kkm"),
+      status: formData.get("status")
+    };
+
+    try {
+      setLoading(true);
+      if (isEditMode) {
+        // UPDATE: api.put
+        await api.put(`/mata-pelajaran/${selectedMapel.id}`, body);
+        setSnackbar({ open: true, message: "Data berhasil diperbarui", severity: "success" });
+      } else {
+        // CREATE: api.post
+        await api.post('/mata-pelajaran', body);
+        setSnackbar({ open: true, message: "Data berhasil ditambahkan", severity: "success" });
+      }
+
+      fetchMapel(); // Refresh data
+      setOpenFormDialog(false);
+
+    } catch (err) {
+      console.error(err);
+      const errMsg = err.response?.data?.message || "Gagal menyimpan data!";
+      setSnackbar({ open: true, message: errMsg, severity: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // =============================
+  // DELETE DATA (PERBAIKAN)
+  // =============================
+  const handleConfirmDelete = async () => {
+    try {
+      setLoading(true);
+      // DELETE: api.delete
+      await api.delete(`/mata-pelajaran/${selectedMapel.id}`);
+      
+      setSnackbar({ open: true, message: "Data berhasil dihapus", severity: "success" });
+      fetchMapel();
+      setOpenConfirmDialog(false);
+
+    } catch (err) {
+      console.error(err);
+      setSnackbar({ open: true, message: "Gagal menghapus!", severity: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // =============================
+  // HANDLERS & UI (SAMA SEPERTI SEBELUMNYA)
+  // =============================
   const handleClickAdd = () => {
     setIsEditMode(false);
     setSelectedMapel(null);
@@ -95,65 +154,29 @@ const MapelCRUD_SD = () => {
     setOpenConfirmDialog(true);
   };
 
-  const handleCloseForm = () => setOpenFormDialog(false);
-  const handleCloseConfirm = () => setOpenConfirmDialog(false);
-
-  const handleFormSubmit = (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const newMapelData = {
-      id: isEditMode ? selectedMapel.id : Date.now(),
-      kode_mapel: formData.get('kode_mapel'),
-      nama_mapel: formData.get('nama_mapel'),
-      kelompok: formData.get('kelompok'),
-      kkm: Number(formData.get('kkm')),
-      status: formData.get('status'),
-    };
-
-    if (isEditMode) {
-      setMapel(mapel.map((m) => (m.id === selectedMapel.id ? newMapelData : m)));
-      setSnackbar({ open: true, message: 'Data mata pelajaran berhasil diperbarui', severity: 'success' });
-    } else {
-      setMapel([...mapel, newMapelData]);
-      setSnackbar({ open: true, message: 'Mata pelajaran baru berhasil ditambahkan', severity: 'success' });
-    }
-    handleCloseForm();
-  };
-
-  const handleConfirmDelete = () => {
-    setMapel(mapel.filter((m) => m.id !== selectedMapel.id));
-    setSnackbar({ open: true, message: 'Data mata pelajaran berhasil dihapus', severity: 'success' });
-    handleCloseConfirm();
-  };
-
-  // Kolom DataGrid
   const columns = [
     { field: 'kode_mapel', headerName: 'Kode Mapel', width: 150 },
     { field: 'nama_mapel', headerName: 'Nama Mata Pelajaran', flex: 1, minWidth: 250 },
     { field: 'kelompok', headerName: 'Kelompok', width: 200 },
     { field: 'kkm', headerName: 'KKM', type: 'number', width: 100 },
     {
-      field: 'status',
-      headerName: 'Status',
-      width: 120,
+      field: 'status', headerName: 'Status', width: 120,
       renderCell: (params) => (
         <Chip label={params.value} size="small" color={params.value === 'Aktif' ? 'success' : 'error'} />
       ),
     },
     {
-      field: 'actions',
-      headerName: 'Aksi',
-      width: 120,
-      sortable: false,
+      field: 'actions', headerName: 'Aksi', width: 120, sortable: false,
       renderCell: (params) => (
         <Box>
           <Tooltip title="Edit">
-            <IconButton onClick={() => handleClickEdit(params.row)} color="primary" size="small">
+            <IconButton color="primary" size="small" onClick={() => handleClickEdit(params.row)}>
               <EditIcon />
             </IconButton>
           </Tooltip>
+
           <Tooltip title="Hapus">
-            <IconButton onClick={() => handleClickDelete(params.row)} color="error" size="small">
+            <IconButton color="error" size="small" onClick={() => handleClickDelete(params.row)}>
               <DeleteIcon />
             </IconButton>
           </Tooltip>
@@ -164,148 +187,159 @@ const MapelCRUD_SD = () => {
 
   return (
     <Box sx={{ p: { xs: 1.5, sm: 1.5, md: 2 }, bgcolor: 'grey.50' }}>
-      <Card sx={{ mb:{ xs: 1, sm: 1.5, md: 3 }, p: { xs: 1.5, sm: 1.5, md: 2 } }}>
-        <Grid
-            container
-            spacing={{ xs: 1.5, sm: 1.5, md: 2 }}
-            alignItems="center"
-            justifyContent="space-between"
-        >
-            {/* Bagian kiri: Pencarian & Filter */}
-            <Grid fullWidth size={{xs: 12, sm: 6, md:7}}>
+
+      {/* FILTER, SEARCH, ADD */}
+      <Card sx={{ mb: { xs: 1, sm: 1.5, md: 3 }, p: { xs: 1.5, sm: 1.5, md: 2 } }}>
+        <Grid container spacing={{ xs: 1.5, sm: 1.5, md: 2 }} alignItems="center">
+
+          <Grid size={{ xs: 12, sm: 6, md: 7 }}>
             <TextField
-                fullWidth
-                size="small"
-                placeholder="Cari berdasarkan nama atau kode..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
+              fullWidth size="small" placeholder="Cari..." value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
                 startAdornment: (
-                    <InputAdornment position="start">
-                    <SearchIcon />
-                    </InputAdornment>
+                  <InputAdornment position="start"><SearchIcon /></InputAdornment>
                 ),
-                }}
+              }}
             />
-            </Grid>
-            <Grid size={{ xs: 7, sm: 6, md: 3 }}>
+          </Grid>
+
+          <Grid size={{ xs: 7, sm: 6, md: 3 }}>
             <FormControl fullWidth size="small">
-                <InputLabel>Filter Kelompok</InputLabel>
-                <Select
-                fullWidth
+              <InputLabel>Filter Kelompok</InputLabel>
+              <Select
                 value={selectedKelompok}
                 label="Filter Kelompok"
                 onChange={(e) => setSelectedKelompok(e.target.value)}
-                >
-                <MenuItem value="Semua">Semua Kelompok</MenuItem>
-                <MenuItem value="Tematik Terpadu">Tematik Terpadu</MenuItem>
-                <MenuItem value="Mata Pelajaran Umum">Mata Pelajaran Umum</MenuItem>
+              >
+                <MenuItem value="Semua">Semua</MenuItem>
+                <MenuItem value="Tematik">Tematik Terpadu</MenuItem>
+                <MenuItem value="Umum">Mata Pelajaran Umum</MenuItem>
                 <MenuItem value="Muatan Lokal">Muatan Lokal</MenuItem>
-                </Select>
+                <MenuItem value="Lainnya">Lainnya</MenuItem>
+              </Select>
             </FormControl>
-            </Grid>
+          </Grid>
 
-            {/* Bagian kanan: Tombol Tambah */}
-            <Grid size={{ xs: 5, sm: 6, md: 2 }} fullWidth>
-            <Button
-                fullWidth
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleClickAdd}
-            >
-                Tambah
+          <Grid size={{ xs: 5, sm: 6, md: 2 }}>
+            <Button fullWidth variant="contained" startIcon={<AddIcon />} onClick={handleClickAdd}>
+              Tambah
             </Button>
-            </Grid>
+          </Grid>
+
         </Grid>
-        </Card>
-
-
-      <Card sx={{ p: { xs: 1, sm: 1.5, md: 2 }}}>
-        <Box sx={{width: '100%' }}>
-          <DataGrid
-            rows={filteredMapel}
-            columns={columns}
-            loading={loading}
-            pageSizeOptions={[10, 25, 50]}
-            initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-            sx={{ border: 0 }}
-          />
-        </Box>
       </Card>
 
-      {/* Dialog Form Tambah/Edit */}
-      <Dialog open={openFormDialog} onClose={handleCloseForm} fullWidth maxWidth="sm">
-        <DialogTitle sx={{
-            bgcolor: 'primary.main',
+      {/* TABLE */}
+      <Card sx={{ p: { xs: 1, sm: 1.5, md: 2 } }}>
+        <DataGrid
+          rows={filteredMapel}
+          columns={columns}
+          loading={loading}
+          pageSizeOptions={[10, 25, 50]}
+          initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+          autoHeight
+          sx={{ border: 'none', '& .MuiDataGrid-columnHeaders': { backgroundColor: 'grey.100' } }}
+        />
+      </Card>
 
-            color: 'white',
+      {/* DIALOG FORM */}
+      <Dialog open={openFormDialog} onClose={() => setOpenFormDialog(false)} fullWidth maxWidth="sm" TransitionComponent={Fade}>
+        <DialogTitle sx={{ bgcolor: 'primary.main', color: 'white' }}>
+          {isEditMode ? "Edit Mata Pelajaran" : "Tambah Mata Pelajaran"}
+        </DialogTitle>
 
-            display: 'flex',
-
-            alignItems: 'center',
-
-            gap: 1
-          }}>{isEditMode ? 'Edit Mata Pelajaran' : 'Tambah Mata Pelajaran Baru'}</DialogTitle>
         <Box component="form" onSubmit={handleFormSubmit}>
           <DialogContent sx={{ pt: 2 }}>
             <Grid container spacing={2}>
+
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField name="kode_mapel" label="Kode Mapel" defaultValue={selectedMapel?.kode_mapel || ''} fullWidth required disabled={isEditMode} />
+                <TextField
+                  name="kode_mapel" label="Kode Mapel" fullWidth required
+                  defaultValue={selectedMapel?.kode_mapel || ""}
+                />
               </Grid>
+
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField name="nama_mapel" label="Nama Mata Pelajaran" defaultValue={selectedMapel?.nama_mapel || ''} fullWidth required />
+                <TextField
+                  name="nama_mapel" label="Nama Mata Pelajaran" fullWidth required
+                  defaultValue={selectedMapel?.nama_mapel}
+                />
               </Grid>
+
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth required>
-                  <InputLabel>Kelompok Mata Pelajaran</InputLabel>
-                  <Select name="kelompok" label="Kelompok Mata Pelajaran" defaultValue={selectedMapel?.kelompok || ''}>
-                    <MenuItem value="Tematik Terpadu">Tematik Terpadu</MenuItem>
-                    <MenuItem value="Mata Pelajaran Umum">Mata Pelajaran Umum</MenuItem>
+                  <InputLabel>Kelompok</InputLabel>
+                  <Select
+                    name="kelompok" label="Kelompok"
+                    defaultValue={selectedMapel?.kelompok || ""}
+                  >
+                    <MenuItem value="Tematik">Tematik Terpadu</MenuItem>
+                    <MenuItem value="Umum">Mata Pelajaran Umum</MenuItem>
                     <MenuItem value="Muatan Lokal">Muatan Lokal</MenuItem>
+                    <MenuItem value="Lainnya">Lainnya</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
+
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField name="kkm" label="KKM (Nilai Minimum)" type="number" defaultValue={selectedMapel?.kkm || ''} fullWidth required />
+                <TextField
+                  name="kkm" label="KKM" type="number" required fullWidth
+                  defaultValue={selectedMapel?.kkm}
+                />
               </Grid>
+
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Status</InputLabel>
-                  <Select name="status" label="Status" defaultValue={selectedMapel?.status || 'Aktif'}>
+                  <Select name="status" label="Status" defaultValue={selectedMapel?.status || "Aktif"}>
                     <MenuItem value="Aktif">Aktif</MenuItem>
                     <MenuItem value="Nonaktif">Nonaktif</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
+
             </Grid>
           </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button onClick={handleCloseForm}>Batal</Button>
-            <Button type="submit" variant="contained">{isEditMode ? 'Perbarui' : 'Simpan'}</Button>
+
+          <DialogActions sx={{ p: 3 }}>
+            <Button onClick={() => setOpenFormDialog(false)}>Batal</Button>
+            <Button type="submit" variant="contained" disabled={loading}>
+                {loading ? <CircularProgress size={24} /> : (isEditMode ? "Perbarui" : "Simpan")}
+            </Button>
           </DialogActions>
         </Box>
       </Dialog>
 
-      {/* Dialog Konfirmasi Hapus */}
-      <Dialog open={openConfirmDialog} onClose={handleCloseConfirm}>
-        <DialogTitle>Konfirmasi Hapus</DialogTitle>
+      {/* DIALOG DELETE */}
+      <Dialog open={openConfirmDialog} onClose={() => setOpenConfirmDialog(false)} TransitionComponent={Fade}>
+        <DialogTitle sx={{ color: 'error.main' }}>Konfirmasi Hapus</DialogTitle>
         <DialogContent>
-          <Alert severity="warning">Tindakan ini tidak dapat dibatalkan.</Alert>
+          <Alert severity="warning">Tindakan ini tidak bisa dibatalkan.</Alert>
           <Typography sx={{ mt: 2 }}>
-            Apakah Anda yakin ingin menghapus mata pelajaran **{selectedMapel?.nama_mapel}**?
+            Hapus mata pelajaran <b>{selectedMapel?.nama_mapel}</b>?
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseConfirm}>Batal</Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="contained">Ya, Hapus</Button>
+          <Button onClick={() => setOpenConfirmDialog(false)}>Batal</Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained" disabled={loading}>
+            {loading ? <CircularProgress size={24} /> : "Ya, Hapus"}
+          </Button>
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
-        <Alert severity={snackbar.severity} sx={{ width: '100%' }} onClose={() => setSnackbar({ ...snackbar, open: false })}>
-          {snackbar.message}
+      {/* NOTIFICATION */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert severity={snackbar.severity} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+            {snackbar.message}
         </Alert>
       </Snackbar>
+
     </Box>
   );
 };
