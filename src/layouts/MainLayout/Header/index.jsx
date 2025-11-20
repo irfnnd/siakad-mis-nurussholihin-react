@@ -13,7 +13,7 @@ import { DRAWER_WIDTH } from 'config';
 import { handlerDrawerOpen, useGetMenuMaster } from 'states/menu';
 
 // assets
-import logo from 'assets/images/logo.svg';
+import logo from '../../../../public/bluelogo2.png';
 import MenuTwoToneIcon from '@mui/icons-material/MenuTwoTone';
 
 // AppBar props, including styles that vary based on drawer state and screen size
@@ -29,7 +29,7 @@ export default function Header() {
   const mainHeader = (
     <Toolbar>
       <Stack direction="row" sx={{ gap: 1, width: { xs: 1, md: DRAWER_WIDTH }, alignItems: 'center', justifyContent: 'space-between' }}>
-        <CardMedia component="img" image={logo} alt="logo" sx={{ width: 170, display: { xs: 'none', md: 'flex' } }} />
+        <CardMedia component="img" image={logo} alt="logo" sx={{ width: 150, display: { xs: 'none', md: 'flex' }, ml: 3.5 }} />
         <IconButton
           edge="start"
           sx={{ mr: { xs: 0, sm: 1.25 }, color: 'background.paper' }}

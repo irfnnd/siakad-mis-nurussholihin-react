@@ -12,7 +12,7 @@ import Box from '@mui/material/Box';
 import MainCard from 'components/cards/MainCard';
 
 // assets
-import Logo from 'assets/images/logo-dark.svg';
+import Logo from '../../../public/whitelogo.png';
 
 // ==============================|| COMMON AUTH LAYOUT ||============================== //
 
@@ -32,29 +32,46 @@ export default function CommonAuthLayout({ title, subHeading, footerLink, childr
           contentSX={{ flexGrow: 1, flexBasis: '50%', width: '50%', px: 4, pt: 5 }}
         >
           <Stack direction="column" sx={{ mb: 2, gap: 4, justifyContent: 'center' }}>
+            
+            {/* --- BAGIAN HEADER (LOGO & JUDUL) --- */}
             <Stack
-              direction={{ xs: 'column-reverse', sm: 'row' }}
-              sx={{ justifyContent: 'space-between', alignItems: 'flex-start', gap: { xs: 2, sm: 1 } }}
+              direction="column" 
+              sx={{ 
+                justifyContent: 'center', 
+                alignItems: 'center', // Membuat logo & teks rata tengah secara horizontal
+                gap: 2 
+              }}
             >
-              <Box>
-                <Typography color="text.primary" gutterBottom variant="h2">
+              {/* 1. Logo dipindah ke Atas */}
+              <Link to="/">
+                <CardMedia 
+                  component="img" 
+                  image={Logo} 
+                  alt="logo" 
+                  sx={{ width: 'auto', maxHeight: 60 }} // Opsional: Atur ukuran logo agar proporsional
+                />
+              </Link>
+
+              {/* 2. Judul (Sign In) dipindah ke Bawah Logo */}
+              <Box sx={{ textAlign: 'center' }}> {/* Text align center agar teks judul rapi */}
+                <Typography color="text.primary" gutterBottom variant="h3">
                   {title}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {subHeading}
                 </Typography>
               </Box>
-              <Link to="/">
-                <CardMedia component="img" image={Logo} alt="logo" />
-              </Link>
             </Stack>
 
             {children}
           </Stack>
+          
           {footerLink && (
-            <Typography variant="subtitle2" color="text.secondary" component={Link} to={footerLink.link} sx={{ textDecoration: 'none' }}>
-              {footerLink.title}
-            </Typography>
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+                <Typography variant="subtitle2" color="text.secondary" component={Link} to={footerLink.link} sx={{ textDecoration: 'none' }}>
+                {footerLink.title}
+                </Typography>
+            </Box>
           )}
         </MainCard>
       </Grid>

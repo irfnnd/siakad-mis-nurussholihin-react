@@ -7,7 +7,7 @@ import SimpleBar from 'components/third-party/SimpleBar';
 import { AppBar, CardMedia, Toolbar } from '@mui/material';
 
 // assets
-import logo from 'assets/images/logo.svg';
+import logo from '../../../../../public/bluelogo2.png';
 
 // ==============================|| DRAWER - CONTENT ||============================== //
 
