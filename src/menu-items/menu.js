@@ -82,7 +82,7 @@ const akademik = {
   title: 'Manajemen Akademik',
   type: 'group',
   // --- PERUBAHAN: 'roles' disesuaikan dengan komentar Anda ---
-  roles: ['guru'], // <-- BISA DILIHAT OLEH ADMIN & GURU
+  roles: ['guru', 'admin'], // <-- BISA DILIHAT OLEH ADMIN & GURU
   children: [
     {
       id: 'input-nilai',

@@ -30,7 +30,7 @@ const router = createBrowserRouter([
 },
 // Penjaga 2 (Admin dan Guru)
 {
-  element: <ProtectedRoutes allowedRoles={['guru']} />,
+  element: <ProtectedRoutes allowedRoles={['guru', 'admin']} />,
   children: [
     MainRoutes,
     AkademikRoutes
