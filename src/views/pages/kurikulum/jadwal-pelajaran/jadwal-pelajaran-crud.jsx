@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Grid,
@@ -25,440 +25,414 @@ import {
   TableCell,
   Paper,
   IconButton,
-  TextField
+  TextField,
+  CircularProgress,
+  FormHelperText
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import DownloadIcon from '@mui/icons-material/Download';
 
-// --- DATA MOCKUP UNTUK JADWAL ---
-// Di aplikasi nyata, ini akan datang dari state atau API
-const mockScheduleData = [
-  {
-    time: '07:15 - 08:45',
-    senin: { id: 1, mapel: 'Matematika', guru: 'Budi Hartono, S.Pd.' },
-    selasa: { id: 2, mapel: 'B. Indonesia', guru: 'Siti Aminah, M.Pd.' },
-    rabu: null,
-    kamis: { id: 3, mapel: 'Matematika', guru: 'Budi Hartono, S.Pd.' },
-    jumat: { id: 4, mapel: 'Fisika', guru: 'Endang S, S.Si.' },
-    sabtu: null
-  },
-  {
-    time: '08:45 - 09:15',
-    istirahat: true
-  },
-  {
-    time: '09:15 - 10:45',
-    senin: { id: 5, mapel: 'Biologi', guru: 'Rina Marlina, S.Pd.' },
-    selasa: { id: 6, mapel: 'B. Inggris', guru: 'Dian P, S.S.' },
-    rabu: { id: 6, mapel: 'B. Inggris', guru: 'Dian P, S.S.' },
-    kamis: { id: 7, mapel: 'Kimia', guru: 'Ahmad, S.Si.' },
-    jumat: { id: 8, mapel: 'Ekonomi', guru: 'Dewi, S.E.' },
-    sabtu: { id: 9, mapel: 'Ekonomi', guru: 'Dewi, S.E.' }
-  }
-  // ... tambahkan baris data lain sesuai kebutuhan
+// --- IMPORT EXCELJS & FILE-SAVER ---
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+
+// --- DATA MOCKUP ---
+const mockGuru = [
+  { id: 1, nama: 'Budi Santoso, S.Pd.SD', role: 'Guru Kelas' },
+  { id: 2, nama: 'Siti Aminah, S.Pd.I', role: 'Guru PAI' },
+  { id: 3, nama: 'Rina Marlina, S.Pd.', role: 'Guru PJOK' },
+  { id: 4, nama: 'Ahmad, S.Pd.', role: 'Guru B. Inggris' },
+  { id: 5, nama: 'Dewi Lestari, S.Pd.SD', role: 'Guru Kelas' },
 ];
 
-// Daftar hari untuk mapping di tabel
-const days = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
+const waliKelasMap = {
+  '1A': 'Budi Santoso, S.Pd.SD',
+  '1B': 'Dewi Lestari, S.Pd.SD',
+  '2A': 'Budi Santoso, S.Pd.SD',
+  '3A': 'Dewi Lestari, S.Pd.SD',
+  '4A': 'Budi Santoso, S.Pd.SD',
+  '5A': 'Dewi Lestari, S.Pd.SD',
+  '6A': 'Budi Santoso, S.Pd.SD',
+};
+
+const mockMapel = [
+  { nama: 'Tematik', tipe: 'Guru Kelas' },
+  { nama: 'Matematika', tipe: 'Guru Kelas' },
+  { nama: 'IPAS', tipe: 'Guru Kelas' },
+  { nama: 'Pendidikan Pancasila', tipe: 'Guru Kelas' },
+  { nama: 'Seni Budaya', tipe: 'Guru Kelas' },
+  { nama: 'Pendidikan Agama Islam', tipe: 'Guru Mapel' },
+  { nama: 'PJOK', tipe: 'Guru Mapel' },
+  { nama: 'Bahasa Inggris (Mulok)', tipe: 'Guru Mapel' },
+];
+
+// Data awal dummy
+const initialSchedule = [
+  { id: 1, kelas: '4A', hari: 'Senin', jamMulai: '07:00', jamSelesai: '07:35', mapel: 'Upacara Bendera', guru: '-' },
+  { id: 2, kelas: '4A', hari: 'Senin', jamMulai: '07:35', jamSelesai: '08:45', mapel: 'Tematik', guru: 'Budi Santoso, S.Pd.SD' },
+  { id: 3, kelas: '4A', hari: 'Selasa', jamMulai: '07:00', jamSelesai: '08:10', mapel: 'PJOK', guru: 'Rina Marlina, S.Pd.' },
+  { id: 4, kelas: '4A', hari: 'Rabu', jamMulai: '07:00', jamSelesai: '08:10', mapel: 'Matematika', guru: 'Budi Santoso, S.Pd.SD' },
+];
+
+const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 
 // --- KOMPONEN UTAMA ---
 const JadwalPelajaran = () => {
-  // === STATE MANAGEMENT ===
-  // State untuk filter
-  const [selectedKelas, setSelectedKelas] = useState('10A');
+  const [jadwalList, setJadwalList] = useState(initialSchedule);
+  const [loading, setLoading] = useState(false);
+  
+  const [selectedKelas, setSelectedKelas] = useState('4A');
   const [selectedTahunAjaran, setSelectedTahunAjaran] = useState('2024/2025');
 
-  // State untuk Dialog Form
   const [openFormDialog, setOpenFormDialog] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [currentEntry, setCurrentEntry] = useState(null); // Data yang sedang diedit/dihapus
-
-  // State untuk Dialog Konfirmasi Hapus
-  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
-
-  // State untuk Snackbar (Notifikasi)
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: '',
-    severity: 'success' // 'success', 'error', 'warning', 'info'
+  const [formData, setFormData] = useState({
+    id: null, kelas: '', hari: '', jamMulai: '07:00', jamSelesai: '07:35', mapel: '', guru: ''
   });
 
-  // === HANDLER UNTUK FORM DIALOG ===
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
+  // --- HELPER: Transform Data ke Tabel ---
+  const tableRows = useMemo(() => {
+    const filtered = jadwalList.filter(item => item.kelas === selectedKelas);
+    const uniqueTimes = [...new Set(filtered.map(item => `${item.jamMulai} - ${item.jamSelesai}`))].sort();
+
+    return uniqueTimes.map(time => {
+      const [start, end] = time.split(' - ');
+      const rowData = { time };
+      days.forEach(day => {
+        const entry = filtered.find(item => item.hari === day && item.jamMulai === start);
+        rowData[day.toLowerCase()] = entry || null;
+      });
+      return rowData;
+    });
+  }, [jadwalList, selectedKelas]);
+
+  // --- FUNGSI EXPORT EXCEL (MENGGUNAKAN EXCELJS) ---
+  const handleExport = async () => {
+    // 1. Buat Workbook dan Worksheet baru
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(`Jadwal ${selectedKelas}`);
+
+    // 2. Definisi Kolom
+    worksheet.columns = [
+      { header: 'Waktu', key: 'time', width: 15 },
+      { header: 'Senin', key: 'senin', width: 30 },
+      { header: 'Selasa', key: 'selasa', width: 30 },
+      { header: 'Rabu', key: 'rabu', width: 30 },
+      { header: 'Kamis', key: 'kamis', width: 30 },
+      { header: 'Jumat', key: 'jumat', width: 30 },
+      { header: 'Sabtu', key: 'sabtu', width: 30 },
+    ];
+
+    // 3. Masukkan Data Baris
+    tableRows.forEach((row) => {
+      const rowData = { time: row.time };
+      
+      days.forEach((day) => {
+        const entry = row[day.toLowerCase()];
+        if (entry) {
+          if (entry.mapel === 'Istirahat') {
+            rowData[day.toLowerCase()] = 'ISTIRAHAT';
+          } else {
+            // Gunakan format teks dengan enter (\n) agar rapi
+            rowData[day.toLowerCase()] = `${entry.mapel}\n(${entry.guru})`;
+          }
+        } else {
+          rowData[day.toLowerCase()] = '';
+        }
+      });
+
+      worksheet.addRow(rowData);
+    });
+
+    // 4. Styling Excel (Agar terlihat profesional)
+    
+    // Style Header (Baris 1)
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF1976D2' } // Warna Biru Primary
+    };
+    headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+
+    // Style Isi Tabel (Mulai Baris 2)
+    worksheet.eachRow((row, rowNumber) => {
+      // Atur tinggi baris agar teks wrap terlihat
+      row.height = 45; 
+      
+      row.eachCell((cell) => {
+        // Border untuk semua sel
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        };
+        
+        // Alignment (Tengah & Wrap Text)
+        cell.alignment = { 
+          vertical: 'middle', 
+          horizontal: 'center', 
+          wrapText: true 
+        };
+
+        // Khusus kolom Istirahat (Jika ada teks ISTIRAHAT)
+        if (cell.value === 'ISTIRAHAT') {
+           cell.fill = {
+             type: 'pattern',
+             pattern: 'solid',
+             fgColor: { argb: 'FFFFEB3B' } // Kuning
+           };
+           cell.font = { bold: true };
+        }
+      });
+    });
+
+    // 5. Generate Buffer & Download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, `Jadwal_Pelajaran_Kelas_${selectedKelas}.xlsx`);
+  };
+
+  // --- HANDLERS LAIN ---
+  const handleMapelChange = (mapelNama) => {
+    const mapelInfo = mockMapel.find(m => m.nama === mapelNama);
+    let guruOtomatis = '';
+
+    if (mapelNama === 'Istirahat' || mapelNama === 'Upacara Bendera') {
+        guruOtomatis = '-';
+    } else if (mapelInfo?.tipe === 'Guru Kelas') {
+        guruOtomatis = waliKelasMap[formData.kelas] || ''; 
+    }
+
+    setFormData(prev => ({
+        ...prev,
+        mapel: mapelNama,
+        guru: guruOtomatis
+    }));
+  };
+
   const handleOpenAddDialog = () => {
     setIsEditMode(false);
-    setCurrentEntry(null);
+    setFormData({
+      id: null,
+      kelas: selectedKelas,
+      hari: 'Senin',
+      jamMulai: '07:00',
+      jamSelesai: '07:35',
+      mapel: '',
+      guru: ''
+    });
     setOpenFormDialog(true);
   };
 
   const handleOpenEditDialog = (entry) => {
     setIsEditMode(true);
-    setCurrentEntry(entry); // Simpan data entri yang akan diedit
+    setFormData(entry);
     setOpenFormDialog(true);
-  };
-
-  const handleCloseForm = () => {
-    setOpenFormDialog(false);
-    setCurrentEntry(null); // Bersihkan data
   };
 
   const handleFormSubmit = (event) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const data = Object.fromEntries(formData.entries());
+    setLoading(true);
+    const newData = { ...formData, id: isEditMode ? formData.id : Date.now() };
 
-    if (isEditMode) {
-      console.log('Memperbarui data:', data, 'dengan ID:', currentEntry.id);
-      // Logika API untuk UPDATE di sini
-      setSnackbar({ open: true, message: 'Entri jadwal berhasil diperbarui!', severity: 'success' });
-    } else {
-      console.log('Menyimpan data baru:', data);
-      // Logika API untuk CREATE di sini
-      setSnackbar({ open: true, message: 'Entri jadwal baru berhasil disimpan!', severity: 'success' });
-    }
-
-    handleCloseForm();
-    // Di sini Anda akan memanggil fungsi untuk memuat ulang data (refetch)
-  };
-
-  // === HANDLER UNTUK DIALOG HAPUS ===
-  const handleOpenConfirmDelete = (entry) => {
-    setCurrentEntry(entry);
-    setOpenConfirmDialog(true);
-  };
-
-  const handleCloseConfirm = () => {
-    setOpenConfirmDialog(false);
-    setCurrentEntry(null);
+    setTimeout(() => {
+      if (isEditMode) {
+        setJadwalList(prev => prev.map(item => item.id === newData.id ? newData : item));
+        setSnackbar({ open: true, message: 'Jadwal diperbarui', severity: 'success' });
+      } else {
+        setJadwalList(prev => [...prev, newData]);
+        setSnackbar({ open: true, message: 'Jadwal ditambahkan', severity: 'success' });
+      }
+      setLoading(false);
+      setOpenFormDialog(false);
+    }, 500);
   };
 
   const handleConfirmDelete = () => {
-    console.log('Menghapus data:', currentEntry.id);
-    // Logika API untuk DELETE di sini
-    handleCloseConfirm();
-    setSnackbar({ open: true, message: 'Entri jadwal telah dihapus!', severity: 'error' });
-    // Panggil fungsi refetch data di sini
+    setJadwalList(prev => prev.filter(item => item.id !== formData.id));
+    setOpenConfirmDialog(false);
+    setSnackbar({ open: true, message: 'Jadwal dihapus', severity: 'success' });
   };
 
-  // === HANDLER UNTUK SNACKBAR ===
-  const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setSnackbar({ ...snackbar, open: false });
-  };
-  // === RENDER KOMPONEN ===
   return (
     <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 3 } }}>
-      {/* === Header & Filter === */}
-      {/* PERBAIKAN: 
-      1. 'size' dihapus dan diganti dengan prop 'container'.
-      2. 'spacing' responsif Anda sudah bagus dan dipertahankan.
-    */}
+      
+      {/* HEADER & FILTER */}
       <Card sx={{ mb: { xs: 1, sm: 1.5, md: 3 }, p: { xs: 1.5, sm: 1.5, md: 2 } }}>
-        <Grid container spacing={{ xs: 1.5, sm: 1.5, md: 2 }} alignItems="center" justifyContent="space-between">
-          {/* ITEM 1: Grup Filter
-          PERBAIKAN: 
-          1. 'size' diubah menjadi 'item'.
-          2. 'sm' (tanpa angka) berarti "ambil sisa ruang yang ada" di layar 'sm' ke atas.
-        */}
-          <Grid item size={{ xs: 12, sm: 'auto', md:4 }} sm>
-            {/* PERBAIKAN: 
-            1. 'direction' dibuat responsif: 'column' di mobile (xs), 'row' di (sm) ke atas.
-               Ini agar filter tidak dijejer ke samping di layar kecil.
-          */}
-            <Stack direction={{ xs: 'row', sm: 'row' }} spacing={2}>
+        <Grid container spacing={2} alignItems="center" justifyContent="space-between">
+          
+          {/* Menggunakan size={{ xs: ..., md: ... }} */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <FormControl fullWidth size="small">
                 <InputLabel>Pilih Kelas</InputLabel>
                 <Select value={selectedKelas} label="Pilih Kelas" onChange={(e) => setSelectedKelas(e.target.value)}>
-                  <MenuItem value="10A">10A</MenuItem>
-                  <MenuItem value="10B">10B</MenuItem>
-                  <MenuItem value="11A">11A</MenuItem>
-                  <MenuItem value="11B">11B</MenuItem>
-                  <MenuItem value="12A">12A</MenuItem>
-                  <MenuItem value="12B">12B</MenuItem>
+                  {Object.keys(waliKelasMap).map(kelas => (
+                    <MenuItem key={kelas} value={kelas}>Kelas {kelas}</MenuItem>
+                  ))}
                 </Select>
               </FormControl>
-
               <FormControl fullWidth size="small">
                 <InputLabel>Tahun Ajaran</InputLabel>
                 <Select value={selectedTahunAjaran} label="Tahun Ajaran" onChange={(e) => setSelectedTahunAjaran(e.target.value)}>
                   <MenuItem value="2024/2025">2024/2025</MenuItem>
-                  <MenuItem value="2023/2024">2023/2024</MenuItem>
                 </Select>
               </FormControl>
             </Stack>
           </Grid>
-
-          {/* ITEM 2: Tombol Aksi
-          PERBAIKAN: 
-          1. 'size' diubah menjadi 'item'.
-          2. 'sm="auto"' membuat lebarnya pas dengan konten tombol di layar 'sm' ke atas.
-        */}
-          <Grid item size={{ xs: 12, sm: 'auto' }} sm="auto">
-            <Button fullWidth variant="contained" startIcon={<AddIcon />} onClick={handleOpenAddDialog}>
-              Tambah Entri Jadwal
-            </Button>
+          
+          {/* TOMBOL AKSI */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Stack direction="row" spacing={1} justifyContent={{ xs: 'flex-start', md: 'flex-end' }}>
+                <Button 
+                    variant="outlined" 
+                    startIcon={<DownloadIcon />} 
+                    onClick={handleExport}
+                >
+                  Export Excel
+                </Button>
+                <Button 
+                    variant="contained" 
+                    startIcon={<AddIcon />} 
+                    onClick={handleOpenAddDialog}
+                >
+                  Tambah Jadwal
+                </Button>
+            </Stack>
           </Grid>
         </Grid>
+        <Typography variant="caption" sx={{ mt: 1, display: 'block', color: 'text.secondary' }}>
+           Wali Kelas <strong>{selectedKelas}</strong> saat ini: {waliKelasMap[selectedKelas]}
+        </Typography>
       </Card>
 
-      {/* === Tampilan Tabel Jadwal === */}
-      {/* Tidak ada perubahan di sini, layout tabel Anda sudah responsif dengan TableContainer */}
+      {/* TABEL JADWAL */}
       <Card>
-        <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-          <Typography variant="h6" fontWeight={600}>
-            Jadwal Pelajaran - Kelas {selectedKelas}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Tahun Ajaran {selectedTahunAjaran}
-          </Typography>
-        </Box>
-
-        <TableContainer component={Paper} sx={{ overflow: 'auto', border: 'none', boxShadow: 'none' }}>
-          <Table sx={{ minWidth: 800 }} aria-label="tabel jadwal pelajaran">
+        <TableContainer component={Paper} sx={{ overflowX: 'auto', border: 'none', boxShadow: 'none' }}>
+          <Table sx={{ minWidth: 900 }}>
             <TableHead sx={{ bgcolor: 'grey.100' }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 'bold', width: '120px' }}>Jam</TableCell>
-                {days.map((day) => (
-                  <TableCell key={day} sx={{ fontWeight: 'bold', textTransform: 'capitalize' }}>
-                    {day}
-                  </TableCell>
+                <TableCell sx={{ fontWeight: 'bold', textAlign: 'center', width: 150 }}>Waktu</TableCell>
+                {days.map(day => (
+                  <TableCell key={day} sx={{ fontWeight: 'bold', textAlign: 'center', width: 150 }}>{day}</TableCell>
                 ))}
               </TableRow>
             </TableHead>
-
             <TableBody>
-              {mockScheduleData.map((row) =>
-                row.istirahat ? (
-                  <TableRow key={row.time} sx={{ bgcolor: 'success.lighter' }}>
-                    <TableCell component="th" scope="row">
-                      {row.time}
-                    </TableCell>
-                    <TableCell colSpan={6} align="center" sx={{ fontWeight: 'bold' }}>
-                      <AccessTimeIcon sx={{ fontSize: '1rem', mr: 0.5, verticalAlign: 'middle' }} /> ISTIRAHAT
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  <TableRow key={row.time} hover>
-                    <TableCell component="th" scope="row">
-                      {row.time}
-                    </TableCell>
-                    {days.map((day) => {
-                      const entry = row[day];
-                      return (
-                        <TableCell key={day} sx={{ verticalAlign: 'top', ...(entry ? {} : { bgcolor: 'grey.50' }) }}>
-                          {entry && (
-                            <Box sx={{ position: 'relative', pt: 2, pb: 1 }}>
-                              <Typography variant="body2" fontWeight={500}>
-                                {entry.mapel}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {entry.guru}
-                              </Typography>
-
-                              <Stack direction="row" sx={{ position: 'absolute', top: -10, right: -10 }}>
-                                <IconButton size="small" onClick={() => handleOpenEditDialog(entry)}>
-                                  <EditIcon fontSize="inherit" color="primary" />
-                                </IconButton>
-                                <IconButton size="small" onClick={() => handleOpenConfirmDelete(entry)}>
-                                  <DeleteIcon fontSize="inherit" color="error" />
-                                </IconButton>
-                              </Stack>
-                            </Box>
-                          )}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                )
+              {tableRows.length > 0 ? tableRows.map((row, idx) => (
+                <TableRow key={idx} hover>
+                  <TableCell align="center" sx={{ fontWeight: 500, bgcolor: 'grey.50' }}>{row.time}</TableCell>
+                  {days.map(day => {
+                    const entry = row[day.toLowerCase()];
+                    if (entry?.mapel === 'Istirahat') {
+                        return <TableCell key={day} sx={{ bgcolor: 'warning.lighter', textAlign:'center', fontWeight:'bold', color:'warning.dark' }}>ISTIRAHAT</TableCell>;
+                    }
+                    return (
+                      <TableCell key={day} sx={{ verticalAlign: 'top', height: 50, p: 1 }}>
+                        {entry ? (
+                          <Card variant="outlined" sx={{ height: '100%', bgcolor: 'primary.lighter', border: '1px solid', borderColor: 'primary.main', p: 1, position: 'relative', '&:hover .action-buttons': { display: 'flex' } }}>
+                            <Typography variant="subtitle2" fontWeight={700} color="primary.dark" sx={{ fontSize: '0.85rem' }}>{entry.mapel}</Typography>
+                            <Typography variant="caption" display="block" color="text.secondary" sx={{ lineHeight: 1.2 }}>
+                                {entry.guru === waliKelasMap[selectedKelas] ? 'Wali Kelas' : entry.guru}
+                            </Typography>
+                            <Stack className="action-buttons" direction="row" spacing={0.5} sx={{ display: 'none', position: 'absolute', bottom: 4, right: 4, bgcolor: 'white', borderRadius: 1, boxShadow: 1 }}>
+                              <IconButton size="small" onClick={() => handleOpenEditDialog(entry)}><EditIcon fontSize="inherit" color="primary" /></IconButton>
+                              <IconButton size="small" onClick={() => { setFormData(entry); setOpenConfirmDialog(true); }}><DeleteIcon fontSize="inherit" color="error" /></IconButton>
+                            </Stack>
+                          </Card>
+                        ) : <Box sx={{ height: '100%', bgcolor: 'grey.50', border: '1px dashed', borderColor: 'grey.300', borderRadius: 1 }} />}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              )) : (
+                <TableRow>
+                    <TableCell colSpan={7} align="center" sx={{ py: 5, color: 'text.secondary' }}>Belum ada jadwal.</TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>
         </TableContainer>
       </Card>
 
-      {/* === Dialog Form Tambah/Edit Entri Jadwal === */}
-
-      <Dialog open={openFormDialog} onClose={handleCloseForm} fullWidth maxWidth="sm" TransitionComponent={Fade}>
-        <DialogTitle
-          sx={{
-            bgcolor: 'primary.main',
-
-            color: 'white',
-
-            display: 'flex',
-
-            alignItems: 'center',
-
-            gap: 1
-          }}
-        >
-          <CalendarMonthIcon />
-
-          {isEditMode ? 'Edit Entri Jadwal' : 'Tambah Entri Jadwal Baru'}
+      {/* DIALOG FORM */}
+      <Dialog open={openFormDialog} onClose={() => setOpenFormDialog(false)} fullWidth maxWidth="sm" TransitionComponent={Fade}>
+        <DialogTitle sx={{ bgcolor: 'primary.main', color: 'white', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CalendarMonthIcon /> {isEditMode ? 'Edit Jadwal' : 'Tambah Jadwal Baru'}
         </DialogTitle>
-
         <Box component="form" onSubmit={handleFormSubmit}>
           <DialogContent sx={{ pt: 3 }}>
-            <Grid container size={{ xs: 12 }} spacing={2}>
-              <Grid size={{ xs: 6, sm: 6 }}>
-                <FormControl fullWidth required>
-                  <InputLabel>Kelas</InputLabel>
-
-                  <Select name="kelas" label="Kelas" defaultValue={currentEntry?.kelas || selectedKelas}>
-                    <MenuItem value="10A">10A</MenuItem>
-
-                    <MenuItem value="10B">10B</MenuItem>
-
-                    <MenuItem value="11A">11A</MenuItem>
-
-                    <MenuItem value="11B">11B</MenuItem>
-
-                    <MenuItem value="12A">12A</MenuItem>
-
-                    <MenuItem value="12B">12B</MenuItem>
-                  </Select>
-                </FormControl>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 6, md: 3 }}>
+                <TextField label="Kelas" fullWidth size="small" value={formData.kelas} disabled />
               </Grid>
-
-              <Grid size={{ xs: 6, sm: 6 }}>
-                <FormControl fullWidth required>
+              <Grid size={{ xs: 6, md: 3 }}>
+                <FormControl fullWidth required size="small">
                   <InputLabel>Hari</InputLabel>
-
-                  <Select name="hari" label="Hari" defaultValue={currentEntry?.hari || ''}>
-                    <MenuItem value="Senin">Senin</MenuItem>
-
-                    <MenuItem value="Selasa">Selasa</MenuItem>
-
-                    <MenuItem value="Rabu">Rabu</MenuItem>
-
-                    <MenuItem value="Kamis">Kamis</MenuItem>
-
-                    <MenuItem value="Jumat">Jumat</MenuItem>
-
-                    <MenuItem value="Sabtu">Sabtu</MenuItem>
+                  <Select value={formData.hari} label="Hari" onChange={(e) => setFormData({ ...formData, hari: e.target.value })}>
+                    {days.map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
                   </Select>
                 </FormControl>
               </Grid>
-
-              <Grid size={{ xs: 6, sm: 6 }}>
-                <TextField
-                  name="jamMulai"
-                  label="Jam Mulai"
-                  type="time"
-                  fullWidth
-                  required
-                  InputLabelProps={{ shrink: true }}
-                  defaultValue={currentEntry?.jamMulai || '07:15'}
-                />
+              <Grid size={{ xs: 6, md: 3 }}>
+                <TextField label="Jam Mulai" type="time" fullWidth required size="small" InputLabelProps={{ shrink: true }} value={formData.jamMulai} onChange={(e) => setFormData({ ...formData, jamMulai: e.target.value })} />
               </Grid>
-
-              <Grid size={{ xs: 6, sm: 6 }}>
-                <TextField
-                  name="jamSelesai"
-                  label="Jam Selesai"
-                  type="time"
-                  fullWidth
-                  required
-                  InputLabelProps={{ shrink: true }}
-                  defaultValue={currentEntry?.jamSelesai || '08:45'}
-                />
+              <Grid size={{ xs: 6, md:3 }}>
+                <TextField label="Jam Selesai" type="time" fullWidth required size="small" InputLabelProps={{ shrink: true }} value={formData.jamSelesai} onChange={(e) => setFormData({ ...formData, jamSelesai: e.target.value })} />
               </Grid>
-
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <FormControl fullWidth required>
+              <Grid size={{ xs: 12, md:6 }}>
+                <FormControl fullWidth required size="small">
                   <InputLabel>Mata Pelajaran</InputLabel>
-
-                  {/* Di aplikasi nyata, ini akan di-map dari API */}
-
-                  <Select name="mapel" label="Mata Pelajaran" defaultValue={currentEntry?.mapel || ''}>
-                    <MenuItem value="Matematika">Matematika</MenuItem>
-
-                    <MenuItem value="Fisika">Fisika</MenuItem>
-
-                    <MenuItem value="Biologi">Biologi</MenuItem>
-
-                    <MenuItem value="Kimia">Kimia</MenuItem>
-
-                    <MenuItem value="B. Indonesia">B. Indonesia</MenuItem>
-
-                    <MenuItem value="B. Inggris">B. Inggris</MenuItem>
-
-                    <MenuItem value="Ekonomi">Ekonomi</MenuItem>
+                  <Select value={formData.mapel} label="Mata Pelajaran" onChange={(e) => handleMapelChange(e.target.value)}>
+                     {mockMapel.map(m => <MenuItem key={m.nama} value={m.nama}>{m.nama}</MenuItem>)}
+                     <MenuItem value="Upacara Bendera" sx={{ color: 'info.main' }}>Upacara Bendera</MenuItem>
+                     <MenuItem value="Istirahat" sx={{ color: 'warning.main', fontWeight: 'bold' }}>Istirahat</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
-
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <FormControl fullWidth required>
+              <Grid size={{ xs: 12, md:6 }}>
+                <FormControl fullWidth required size="small">
                   <InputLabel>Guru Pengajar</InputLabel>
-
-                  {/* Di aplikasi nyata, ini akan di-map dari API */}
-
-                  <Select name="guru" label="Guru Pengajar" defaultValue={currentEntry?.guru || ''}>
-                    <MenuItem value="Budi Hartono, S.Pd.">Budi Hartono, S.Pd.</MenuItem>
-
-                    <MenuItem value="Siti Aminah, M.Pd.">Siti Aminah, M.Pd.</MenuItem>
-
-                    <MenuItem value="Endang S, S.Si.">Endang S, S.Si.</MenuItem>
-
-                    <MenuItem value="Rina Marlina, S.Pd.">Rina Marlina, S.Pd.</MenuItem>
-
-                    <MenuItem value="Dian P, S.S.">Dian P, S.S.</MenuItem>
-
-                    <MenuItem value="Ahmad, S.Si.">Ahmad, S.Si.</MenuItem>
-
-                    <MenuItem value="Dewi, S.E.">Dewi, S.E.</MenuItem>
+                  <Select value={formData.guru} label="Guru Pengajar" onChange={(e) => setFormData({ ...formData, guru: e.target.value })}>
+                    <MenuItem value="-">-</MenuItem>
+                    <MenuItem value={waliKelasMap[formData.kelas]} sx={{ fontWeight: 'bold', bgcolor: 'action.hover' }}>{waliKelasMap[formData.kelas]} (Wali Kelas)</MenuItem>
+                    <MenuItem disabled>────────────────</MenuItem>
+                    {mockGuru.map(g => <MenuItem key={g.id} value={g.nama}>{g.nama} ({g.role})</MenuItem>)}
                   </Select>
+                  <FormHelperText>Otomatis terisi Wali Kelas untuk Mapel Umum</FormHelperText>
                 </FormControl>
               </Grid>
             </Grid>
           </DialogContent>
-
-          <DialogActions sx={{ p: 3 }}>
-            <Button onClick={handleCloseForm} variant="outlined">
-              Batal
-            </Button>
-
-            <Button type="submit" variant="contained" size="large">
-              {isEditMode ? 'Perbarui Entri' : 'Simpan Entri'}
-            </Button>
+          <DialogActions sx={{ p: 2 }}>
+            <Button onClick={() => setOpenFormDialog(false)}>Batal</Button>
+            <Button type="submit" variant="contained" disabled={loading}>{loading ? <CircularProgress size={24} /> : 'Simpan'}</Button>
           </DialogActions>
         </Box>
       </Dialog>
 
-      {/* === Dialog Konfirmasi Hapus (Sudah Benar) === */}
-      <Dialog open={openConfirmDialog} onClose={handleCloseConfirm} TransitionComponent={Fade}>
-        <DialogTitle sx={{ color: 'error.main' }}>Konfirmasi Hapus</DialogTitle>
-        <DialogContent>
-          <Alert severity="warning" sx={{ mb: 2 }}>
-            Tindakan ini tidak dapat dibatalkan!
-          </Alert>
-          <Typography>
-            Apakah Anda yakin ingin menghapus jadwal <strong>{currentEntry?.mapel}</strong> ({currentEntry?.guru})?
-          </Typography>
-        </DialogContent>
+      {/* Dialog Hapus */}
+      <Dialog open={openConfirmDialog} onClose={() => setOpenConfirmDialog(false)}>
+        <DialogTitle sx={{ color: 'error.main' }}>Hapus Jadwal?</DialogTitle>
+        <DialogContent><Typography>Hapus <b>{formData.mapel}</b> di hari <b>{formData.hari}</b>?</Typography></DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseConfirm}>Batal</Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="contained">
-            Ya, Hapus
-          </Button>
+          <Button onClick={() => setOpenConfirmDialog(false)}>Batal</Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained">Hapus</Button>
         </DialogActions>
       </Dialog>
 
-      {/* === Snackbar Notifikasi (Sudah Benar) === */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
       </Snackbar>
     </Box>
   );
