@@ -13,7 +13,7 @@ import { DRAWER_WIDTH } from 'config';
 import { handlerDrawerOpen, useGetMenuMaster } from 'states/menu';
 
 // assets
-import logo from '../../../../public/bluelogo2.png';
+import logo from '../../../assets/images/bluelogo2.png';
 import MenuTwoToneIcon from '@mui/icons-material/MenuTwoTone';
 
 // AppBar props, including styles that vary based on drawer state and screen size

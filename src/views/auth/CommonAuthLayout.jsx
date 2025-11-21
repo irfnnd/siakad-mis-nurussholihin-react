@@ -12,7 +12,7 @@ import Box from '@mui/material/Box';
 import MainCard from 'components/cards/MainCard';
 
 // assets
-import Logo from '../../../public/whitelogo.png';
+import Logo from '../../assets/images/whitelogo.png';
 
 // ==============================|| COMMON AUTH LAYOUT ||============================== //
 
