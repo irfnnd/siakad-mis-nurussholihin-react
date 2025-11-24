@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -20,7 +20,9 @@ import {
   Avatar,
   Alert,
   Snackbar,
-  InputAdornment
+  InputAdornment,
+  Fade,
+  CircularProgress
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 
@@ -36,51 +38,8 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DownloadIcon from '@mui/icons-material/Download';
 
-// Data dummy untuk Pegawai
-const initialRows = [
-  {
-    id: 1,
-    nip: '3201234567890001',
-    nama: 'Dr. Ahmad Subagyo, M.Kom.',
-    jabatan: 'Direktur Utama',
-    jenisKelamin: 'Laki-laki',
-    alamat: 'Jl. Jenderal Sudirman No. 10, Jakarta',
-    email: 'ahmad.s@perusahaan.com',
-    telepon: '081298765432',
-    tanggalLahir: '1985-03-15',
-    agama: 'Islam',
-    status: 'Aktif',
-    tanggalMasuk: '2010-01-15'
-  },
-  {
-    id: 2,
-    nip: '3201234567890002',
-    nama: 'Siti Aminah, S.E.',
-    jabatan: 'Manajer Keuangan',
-    jenisKelamin: 'Perempuan',
-    alamat: 'Jl. MH Thamrin No. 5, Jakarta',
-    email: 'siti.aminah@perusahaan.com',
-    telepon: '081312345678',
-    tanggalLahir: '1990-08-20',
-    agama: 'Islam',
-    status: 'Aktif',
-    tanggalMasuk: '2015-03-01'
-  },
-  {
-    id: 3,
-    nip: '3201234567890003',
-    nama: 'Bambang Pamungkas',
-    jabatan: 'Staf IT',
-    jenisKelamin: 'Laki-laki',
-    alamat: 'Jl. Gatot Subroto No. 1, Jakarta',
-    email: 'bambang.it@perusahaan.com',
-    telepon: '081567891234',
-    tanggalLahir: '1992-05-10',
-    agama: 'Kristen',
-    status: 'Cuti',
-    tanggalMasuk: '2018-01-20'
-  }
-];
+// Import API
+import api from '../../../../services/api'; // Pastikan path ini benar
 
 const PegawaiCRUD = () => {
   // State management
@@ -93,46 +52,80 @@ const PegawaiCRUD = () => {
   const [selectedPegawai, setSelectedPegawai] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  
+  // Filter State
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedJabatan, setSelectedJabatan] = useState('Semua');
   const [selectedStatus, setSelectedStatus] = useState('Semua');
 
-  // Simulasi pengambilan data
+  // --- 1. GENERATE OPSI FILTER DINAMIS ---
+  const jabatanOptions = useMemo(() => {
+    const jabatans = pegawai.map(p => p.jabatan).filter(j => j);
+    return [...new Set(jabatans)].sort();
+  }, [pegawai]);
+
+  const statusOptions = useMemo(() => {
+    const statuses = pegawai.map(p => p.status).filter(s => s);
+    return [...new Set(statuses)].sort();
+  }, [pegawai]);
+
+
+  // --- FETCH DATA ---
+  const fetchPegawai = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get('/pegawai');
+      // Sesuaikan dengan JSON: response.data.data.pegawai
+      const rawData = response.data?.data?.pegawai || response.data?.data || [];
+      
+      // Mapping data agar sesuai dengan kolom DataGrid (Flattening)
+      const mappedData = rawData.map(p => ({
+        ...p,
+        nama: p.nama_lengkap, // Backend: nama_lengkap -> Frontend: nama
+        email: p.user?.email || '-', // Ambil email dari relasi user
+        status: p.user?.status || 'Nonaktif', // Ambil status dari relasi user
+        // Handle field lain jika null di backend
+        jenisKelamin: p.jenis_kelamin || '',
+        tanggalLahir: p.tanggal_lahir || '',
+        agama: p.agama || '',
+        tanggalMasuk: p.tanggal_masuk || ''
+      }));
+
+      setPegawai(mappedData);
+      setFilteredPegawai(mappedData);
+    } catch (error) {
+      console.error("Error fetching pegawai:", error);
+      setSnackbar({ open: true, message: 'Gagal memuat data', severity: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setPegawai(initialRows);
-        setFilteredPegawai(initialRows);
-        setSnackbar({ open: true, message: 'Data berhasil dimuat', severity: 'success' });
-      } catch (error) {
-        setSnackbar({ open: true, message: 'Gagal memuat data', severity: 'error' });
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+    fetchPegawai();
   }, []);
 
-  // Filter data berdasarkan pencarian dan filter
+  // --- FILTER LOGIC ---
   useEffect(() => {
     let filtered = pegawai;
 
     if (searchTerm) {
       filtered = filtered.filter(
         (p) =>
-          p.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          p.nip.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          p.jabatan.toLowerCase().includes(searchTerm.toLowerCase())
+          (p.nama && p.nama.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (p.nip && p.nip.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (p.jabatan && p.jabatan.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
+
     if (selectedJabatan !== 'Semua') {
       filtered = filtered.filter((p) => p.jabatan === selectedJabatan);
     }
+
     if (selectedStatus !== 'Semua') {
       filtered = filtered.filter((p) => p.status === selectedStatus);
     }
+    
     setFilteredPegawai(filtered);
   }, [searchTerm, selectedJabatan, selectedStatus, pegawai]);
 
@@ -159,42 +152,67 @@ const PegawaiCRUD = () => {
     setOpenConfirmDialog(true);
   };
 
-  const handleCloseForm = () => setOpenFormDialog(false);
+  const handleCloseForm = () => {
+    setOpenFormDialog(false);
+    setSelectedPegawai(null);
+  }
   const handleCloseDetail = () => setOpenDetailDialog(false);
   const handleCloseConfirm = () => setOpenConfirmDialog(false);
 
-  const handleFormSubmit = (event) => {
+  // --- SUBMIT FORM ---
+  const handleFormSubmit = async (event) => {
     event.preventDefault();
+    setLoading(true);
     const formData = new FormData(event.currentTarget);
-    const newPegawaiData = {
-      id: isEditMode ? selectedPegawai.id : Date.now(),
+    
+    // Mapping payload untuk backend (snake_case biasanya)
+    const payload = {
       nip: formData.get('nip'),
-      nama: formData.get('nama'),
+      nama_lengkap: formData.get('nama'), // Frontend 'nama' -> Backend 'nama_lengkap'
       jabatan: formData.get('jabatan'),
-      jenisKelamin: formData.get('jenisKelamin'),
+      jenis_kelamin: formData.get('jenisKelamin'),
       alamat: formData.get('alamat'),
       email: formData.get('email'),
       telepon: formData.get('telepon'),
-      tanggalLahir: formData.get('tanggalLahir'),
+      tanggal_lahir: formData.get('tanggalLahir'),
       agama: formData.get('agama'),
       status: formData.get('status'),
-      tanggalMasuk: formData.get('tanggalMasuk')
+      tanggal_masuk: formData.get('tanggalMasuk')
     };
 
-    if (isEditMode) {
-      setPegawai(pegawai.map((p) => (p.id === selectedPegawai.id ? newPegawaiData : p)));
-      setSnackbar({ open: true, message: 'Data pegawai berhasil diperbarui', severity: 'success' });
-    } else {
-      setPegawai([...pegawai, newPegawaiData]);
-      setSnackbar({ open: true, message: 'Pegawai baru berhasil ditambahkan', severity: 'success' });
+    try {
+        if (isEditMode) {
+            await api.put(`/pegawai/${selectedPegawai.id}`, payload);
+            setSnackbar({ open: true, message: 'Data pegawai berhasil diperbarui', severity: 'success' });
+        } else {
+            await api.post('/pegawai', payload);
+            setSnackbar({ open: true, message: 'Pegawai baru berhasil ditambahkan', severity: 'success' });
+        }
+        fetchPegawai(); // Refresh data
+        handleCloseForm();
+    } catch (error) {
+        console.error("Error saving:", error);
+        const errMsg = error.response?.data?.message || 'Gagal menyimpan data';
+        setSnackbar({ open: true, message: errMsg, severity: 'error' });
+    } finally {
+        setLoading(false);
     }
-    handleCloseForm();
   };
 
-  const handleConfirmDelete = () => {
-    setPegawai(pegawai.filter((p) => p.id !== selectedPegawai.id));
-    setSnackbar({ open: true, message: 'Data pegawai berhasil dihapus', severity: 'success' });
-    handleCloseConfirm();
+  // --- DELETE ---
+  const handleConfirmDelete = async () => {
+    setLoading(true);
+    try {
+        await api.delete(`/pegawai/${selectedPegawai.id}`);
+        setSnackbar({ open: true, message: 'Data pegawai berhasil dihapus', severity: 'success' });
+        fetchPegawai(); // Refresh list
+        handleCloseConfirm();
+    } catch (error) {
+        console.error("Error deleting:", error);
+        setSnackbar({ open: true, message: 'Gagal menghapus data', severity: 'error' });
+    } finally {
+        setLoading(false);
+    }
   };
 
   // Kolom DataGrid
@@ -210,26 +228,14 @@ const PegawaiCRUD = () => {
       )
     },
     {
-      field: 'nama',
+      field: 'nama', // Menggunakan field hasil mapping di fetchPegawai
       headerName: 'Nama Pegawai',
       flex: 1,
       minWidth: 250
     },
     { field: 'jabatan', headerName: 'Jabatan', width: 200 },
     { field: 'telepon', headerName: 'Telepon', width: 150 },
-    { field: 'email', headerName: 'Email', width: 220 },
-    {
-      field: 'status',
-      headerName: 'Status',
-      width: 100,
-      renderCell: (params) => (
-        <Chip
-          label={params.value}
-          size="small"
-          color={params.value === 'Aktif' ? 'success' : params.value === 'Cuti' ? 'warning' : 'error'}
-        />
-      )
-    },
+    { field: 'alamat', headerName: 'Alamat', width: 200 },
     {
       field: 'actions',
       headerName: 'Aksi',
@@ -261,6 +267,8 @@ const PegawaiCRUD = () => {
     <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 }, bgcolor: 'grey.50' }}>
       <Card sx={{ mb:{ xs: 1, sm: 1.5, md: 3 }, p: { xs: 1.5, sm: 2, md: 3 } }}>
         <Grid container spacing={{ xs: 1.5, sm: 1.5, md: 2 }} alignItems="center">
+          
+          {/* Menggunakan size={{...}} sesuai permintaan */}
           <Grid size={{ xs: 12, md: 4.2 }} >
             <TextField
               fullWidth
@@ -277,28 +285,33 @@ const PegawaiCRUD = () => {
               }}
             />
           </Grid>
+
+          {/* Filter Jabatan Dinamis */}
           <Grid size={{ xs: 6, md: 1.7 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Filter Jabatan</InputLabel>
               <Select value={selectedJabatan} label="Filter Jabatan" onChange={(e) => setSelectedJabatan(e.target.value)}>
                 <MenuItem value="Semua">Semua Jabatan</MenuItem>
-                <MenuItem value="Direktur Utama">Direktur Utama</MenuItem>
-                <MenuItem value="Manajer Keuangan">Manajer Keuangan</MenuItem>
-                <MenuItem value="Staf IT">Staf IT</MenuItem>
+                {jabatanOptions.map((jabatan) => (
+                  <MenuItem key={jabatan} value={jabatan}>{jabatan}</MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Grid>
+
+          {/* Filter Status Dinamis */}
           <Grid size={{ xs: 6, md: 1.7 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Filter Status</InputLabel>
               <Select value={selectedStatus} label="Filter Status" onChange={(e) => setSelectedStatus(e.target.value)}>
                 <MenuItem value="Semua">Semua Status</MenuItem>
-                <MenuItem value="Aktif">Aktif</MenuItem>
-                <MenuItem value="Cuti">Cuti</MenuItem>
-                <MenuItem value="Nonaktif">Nonaktif</MenuItem>
+                {statusOptions.map((status) => (
+                  <MenuItem key={status} value={status}>{status}</MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Grid>
+
           <Grid size={{xs: 6, md: 1.3}}>
             <Button
               fullWidth
@@ -313,7 +326,7 @@ const PegawaiCRUD = () => {
               Reset
             </Button>
           </Grid>
-          <Grid fullWidth size={{ xs: 6, md: 1.5 }}>
+          <Grid size={{ xs: 6, md: 1.5 }}>
             <Button fullWidth variant="outlined" startIcon={<DownloadIcon />}>
               Export
             </Button>
@@ -334,6 +347,7 @@ const PegawaiCRUD = () => {
             loading={loading}
             pageSizeOptions={[10, 25, 50]}
             initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+            autoHeight
             sx={{ border: 0 }}
           />
         </Box>
@@ -351,11 +365,11 @@ const PegawaiCRUD = () => {
               <Grid size={{xs:12, sm:6, md:4}}>
                 <TextField
                   name="nip"
-                  label="nip / ID Pegawai"
+                  label="NIP / ID Pegawai"
                   defaultValue={selectedPegawai?.nip || ''}
                   fullWidth
                   required
-                  disabled={isEditMode}
+                  disabled={isEditMode} 
                 />
               </Grid>
               <Grid size={{xs:12, sm:6, md:4}}>
@@ -375,7 +389,7 @@ const PegawaiCRUD = () => {
                   name="tanggalLahir"
                   label="Tanggal Lahir"
                   type="date"
-                  defaultValue={selectedPegawai?.tanggalLahir || ''}
+                  defaultValue={selectedPegawai?.tanggalLahir ? selectedPegawai.tanggalLahir.split('T')[0] : ''}
                   fullWidth
                   required
                   InputLabelProps={{ shrink: true }}
@@ -390,6 +404,7 @@ const PegawaiCRUD = () => {
                     <MenuItem value="Katolik">Katolik</MenuItem>
                     <MenuItem value="Hindu">Hindu</MenuItem>
                     <MenuItem value="Buddha">Buddha</MenuItem>
+                    <MenuItem value="Konghucu">Konghucu</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -404,7 +419,7 @@ const PegawaiCRUD = () => {
                   name="tanggalMasuk"
                   label="Tanggal Masuk"
                   type="date"
-                  defaultValue={selectedPegawai?.tanggalMasuk || new Date().toISOString().split('T')[0]}
+                  defaultValue={selectedPegawai?.tanggalMasuk ? selectedPegawai.tanggalMasuk.split('T')[0] : ''}
                   fullWidth
                   required
                   InputLabelProps={{ shrink: true }}
@@ -427,8 +442,8 @@ const PegawaiCRUD = () => {
           </DialogContent>
           <DialogActions sx={{ p: 2 }}>
             <Button onClick={handleCloseForm}>Batal</Button>
-            <Button type="submit" variant="contained">
-              {isEditMode ? 'Perbarui' : 'Simpan'}
+            <Button type="submit" variant="contained" disabled={loading}>
+              {loading ? <CircularProgress size={24} /> : (isEditMode ? 'Perbarui' : 'Simpan')}
             </Button>
           </DialogActions>
         </Box>
@@ -443,9 +458,8 @@ const PegawaiCRUD = () => {
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
                 <Avatar sx={{ width: 100, height: 100, mb: 2, bgcolor: 'primary.main', fontSize: '2.5rem' }}>
                   {selectedPegawai.nama
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')}
+                    ? selectedPegawai.nama.charAt(0)
+                    : 'P'}
                 </Avatar>
                 <Typography variant="h5">{selectedPegawai.nama}</Typography>
                 <Chip label={selectedPegawai.jabatan} color="primary" sx={{ mt: 1 }} />
@@ -453,7 +467,7 @@ const PegawaiCRUD = () => {
               <Grid container spacing={2}>
                 <Grid size={{xs:6, sm:4, md:6}}>
                   <Typography variant="body2" color="text.secondary">
-                    nip
+                    NIP
                   </Typography>
                   <Typography>{selectedPegawai.nip}</Typography>
                 </Grid>
@@ -510,8 +524,8 @@ const PegawaiCRUD = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseConfirm}>Batal</Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="contained">
-            Ya, Hapus
+          <Button onClick={handleConfirmDelete} color="error" variant="contained" disabled={loading}>
+            {loading ? <CircularProgress size={24} /> : 'Ya, Hapus'}
           </Button>
         </DialogActions>
       </Dialog>
