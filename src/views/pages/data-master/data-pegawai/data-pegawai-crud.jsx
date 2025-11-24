@@ -209,7 +209,8 @@ const PegawaiCRUD = () => {
         handleCloseConfirm();
     } catch (error) {
         console.error("Error deleting:", error);
-        setSnackbar({ open: true, message: 'Gagal menghapus data', severity: 'error' });
+         const errMsg = error.response?.data?.message || 'Gagal menghapus data';
+        setSnackbar({ open: true, message: errMsg, severity: 'error' });
     } finally {
         setLoading(false);
     }
