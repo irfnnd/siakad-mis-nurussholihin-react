@@ -287,12 +287,12 @@ const HalamanManajemenPengguna = () => {
   // --- KOLOM TABEL ---
   const columns = [
     { field: 'nama', headerName: 'Nama Lengkap', flex: 1, minWidth: 200 },
-    { field: 'username', headerName: 'Username', width: 150 },
+    { field: 'username', headerName: 'Username', width: 120 },
     { field: 'email', headerName: 'Email', flex: 1, minWidth: 200 },
     {
       field: 'role',
       headerName: 'Role',
-      width: 120,
+      width: 100,
       renderCell: (params) => {
         let color = 'default';
         if (params.value === 'Admin') color = 'error';
@@ -303,7 +303,7 @@ const HalamanManajemenPengguna = () => {
     {
       field: 'status',
       headerName: 'Status',
-      width: 120,
+      width: 100,
       renderCell: (params) => {
         const color = params.value === 'Aktif' ? 'success' : 'error';
         return <Chip label={params.value} color={color} size="small" />;
@@ -313,7 +313,7 @@ const HalamanManajemenPengguna = () => {
       field: 'actions',
       type: 'actions',
       headerName: 'Aksi',
-      width: 120,
+      width: 100,
       cellClassName: 'actions',
       getActions: ({ row }) => {
         const isAktif = row.status === 'Aktif';
@@ -337,9 +337,9 @@ const HalamanManajemenPengguna = () => {
   };
 
   return (
-    <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 3 } }}>
+    <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 2 } }}>
       {/* FILTER & ACTION CARD */}
-      <Card sx={{ mb: { xs: 1, sm: 1.5, md: 3 }, p: 2 }}>
+      <Card sx={{ mb: { xs: 1, sm: 1.5, md: 2 }, p: 2 }}>
         <Grid container spacing={2} justifyContent="space-between" alignItems="center">
           <Grid size={{ xs: 12, md: 6 }}>
             <TextField

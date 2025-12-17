@@ -351,13 +351,13 @@ const SiswaCRUD = () => {
   ];
 
   return (
-    <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 3 } }}>
+    <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 2 } }}>
       {/* Konten Data Siswa */}
       <Box>
         {/* Filter dan Pencarian */}
-        <Card sx={{ mb: { xs: 1, sm: 1.5, md: 3 }, p: { xs: 1.5, sm: 1.5, md: 2 } }}>
+        <Card sx={{ mb: { xs: 1, sm: 1.5, md: 2 }, p: { xs: 1.5, sm: 1.5, md: 2 } }}>
           <Grid container spacing={{ xs: 1.5, sm: 1.5, md: 2 }} alignItems="center">
-            <Grid size={{ xs: 12, sm: 6, md: 4.2 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <TextField
                 fullWidth
                 size="small"
@@ -397,7 +397,7 @@ const SiswaCRUD = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid size={{ xs: 6, sm: 6, md: 1.2 }}>
+            <Grid size={{ xs: 6, sm: 6, md: 1.4 }}>
               <Button
                 fullWidth
                 variant="outlined"

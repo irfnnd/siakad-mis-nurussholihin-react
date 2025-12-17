@@ -395,7 +395,7 @@ const JadwalPelajaran = () => {
           </Grid>
           
           <Grid size={{ xs: 12, md: 6 }} container spacing={{xs: 1, md:2}} justifyContent={'flex-end'}>
-            <Grid size={{ xs:12, md: 4 }}>
+            <Grid size={{ xs:12, md: 5 }}>
                 <Button 
                     fullWidth
                     variant="outlined" 
@@ -405,7 +405,7 @@ const JadwalPelajaran = () => {
                   Export Excel
                 </Button>
             </Grid>
-            <Grid size={{ xs: 12, md: 5 }}>
+            <Grid size={{ xs: 12, md: 6 }}>
                 <Button 
                     fullWidth
                     variant="contained" 

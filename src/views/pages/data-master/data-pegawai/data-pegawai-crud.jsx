@@ -265,12 +265,12 @@ const PegawaiCRUD = () => {
   ];
 
   return (
-    <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 }, bgcolor: 'grey.50' }}>
-      <Card sx={{ mb:{ xs: 1, sm: 1.5, md: 3 }, p: { xs: 1.5, sm: 2, md: 3 } }}>
+    <Box sx={{ p: { xs: 1.5, sm: 2, md: 2 }, bgcolor: 'grey.50' }}>
+      <Card sx={{ mb:{ xs: 1, sm: 1.5, md: 2 }, p: { xs: 1.5, sm: 2, md: 2 } }}>
         <Grid container spacing={{ xs: 1.5, sm: 1.5, md: 2 }} alignItems="center">
           
           {/* Menggunakan size={{...}} sesuai permintaan */}
-          <Grid size={{ xs: 12, md: 4.2 }} >
+          <Grid size={{ xs: 12, md: 4 }} >
             <TextField
               fullWidth
               size="small"
@@ -313,7 +313,7 @@ const PegawaiCRUD = () => {
             </FormControl>
           </Grid>
 
-          <Grid size={{xs: 6, md: 1.3}}>
+          <Grid size={{xs: 6, md: 1.4}}>
             <Button
               fullWidth
               variant="outlined"
@@ -332,7 +332,7 @@ const PegawaiCRUD = () => {
               Export
             </Button>
           </Grid>
-          <Grid size={{ xs: 12, md: 1.5 }} >
+          <Grid size={{ xs: 12, md: 1.6 }} >
             <Button fullWidth variant="contained" startIcon={<AddIcon />} onClick={handleClickAdd}>
               Tambah
             </Button>
