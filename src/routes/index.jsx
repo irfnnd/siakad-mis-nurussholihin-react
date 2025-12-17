@@ -23,7 +23,6 @@ const router = createBrowserRouter([
   element: <ProtectedRoutes allowedRoles={['admin']} />,
   children: [
     DataRoutes,
-    MainRoutes,
     KurikulumRoutes,
     UserRoutes
   ]

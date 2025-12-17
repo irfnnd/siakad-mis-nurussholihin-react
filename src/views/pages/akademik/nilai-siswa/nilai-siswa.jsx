@@ -285,7 +285,7 @@ const HalamanNilaiSiswa = () => { // Ganti nama komponen
 
 // === RENDER ===
 return (
-  <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 3 } }}>
+  <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 2 } }}>
     
     {/* === FILTER (SD Workflow) === */}
     <Card sx={{ mb: 1, p: 2 }}>

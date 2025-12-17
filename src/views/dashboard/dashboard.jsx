@@ -58,15 +58,15 @@ const Dashboard = () => {
 // =================================================================
 const AdminDashboard = () => {
   return (
-    <Box sx={{ p: {xs:1, sm:2, md:3} }}>
-      <Typography variant="h4" fontWeight={600} gutterBottom>
+    <Box sx={{ p: { xs: 1, md:0} }}>
+      <Typography variant="h3" fontWeight={600} gutterBottom sx={{mb:2}}>
         Dashboard
       </Typography>
       
       {/* 1. KARTU STATISTIK */}
-      <Grid container spacing={{xs:2, sm:2, md:3}} mb={{xs:2, sm:2, md:3}}>
+      <Grid container spacing={{xs:2, sm:2, md:3}} mb={{xs:2, sm:2, md:2}}>
         {/* Total Siswa */}
-        <Grid size={{xs:12, sm:6, md:3}}>
+        <Grid size={{xs:6, sm:6, md:3}}>
           <Card elevation={2}>
             <CardContent>
               <Stack direction="row" spacing={2} alignItems="center">
@@ -81,7 +81,7 @@ const AdminDashboard = () => {
         </Grid>
         
         {/* Total Pegawai */}
-        <Grid size={{xs:12, sm:6, md:3}}>
+        <Grid size={{xs:6, sm:6, md:3}}>
           <Card elevation={2}>
             <CardContent>
               <Stack direction="row" spacing={2} alignItems="center">
@@ -188,7 +188,7 @@ const GuruDashboard = () => {
   ];
 
 return (
-  <Box sx={{ p: { xs: 1, sm: 2, md: 2 } }}>
+  <Box sx={{ p: { xs: 1, md: 0 } }}>
     <Typography variant="h4" fontWeight={600} gutterBottom>
       Dashboard
     </Typography>

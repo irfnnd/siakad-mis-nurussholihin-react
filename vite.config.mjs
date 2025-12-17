@@ -15,7 +15,7 @@ server: {
         changeOrigin: true,
         secure: false,
       }
-    }
+    },
   },
     preview: {
       open: true,
