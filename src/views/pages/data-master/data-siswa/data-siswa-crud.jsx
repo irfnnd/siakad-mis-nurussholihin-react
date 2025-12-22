@@ -264,7 +264,7 @@ const SiswaCRUD = () => {
     {
       field: 'nis',
       headerName: 'NIS',
-      width: 200
+      width: 150
     },
     {
       field: 'nama_lengkap', // Sesuai JSON backend
@@ -312,12 +312,6 @@ const SiswaCRUD = () => {
       minWidth: 120
     },
     {
-      field: 'alamat', // Sesuai JSON backend
-      headerName: 'Alamat',
-      flex: 1,
-      minWidth: 200
-    },
-    {
       field: 'status',
       headerName: 'Status',
       width: 100,
@@ -326,7 +320,7 @@ const SiswaCRUD = () => {
     {
       field: 'actions',
       headerName: 'Aksi',
-      width: 150,
+      width: 120,
       sortable: false,
       renderCell: (params) => (
         <Box>
@@ -546,25 +540,6 @@ const SiswaCRUD = () => {
                     <MenuItem value="Perempuan">Perempuan</MenuItem>
                   </Select>
                 </FormControl>
-              </Grid>
-
-              {/* Email */}
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <TextField
-                  name="email"
-                  label="Email"
-                  type="email"
-                  defaultValue={selectedStudent?.email || ''}
-                  fullWidth
-                  size="small"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <EmailIcon fontSize="small" />
-                      </InputAdornment>
-                    )
-                  }}
-                />
               </Grid>
 
               {/* Telepon Orang Tua (SESUAI JSON BACKEND) */}
