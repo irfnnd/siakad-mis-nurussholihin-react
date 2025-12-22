@@ -132,6 +132,13 @@ const kurikulum = {
       icon: icons.IconNotebook // <-- Ikon ditambahkan
     },
     {
+      id: 'tahun-semester',
+      title: 'Tahun Semester',
+      type: 'item',
+      url: '/kurikulum/tahun-semester',
+      icon: icons.IconCalendar // <-- Ikon ditambahkan
+    },
+    {
       id: 'jadwal-pelajaran',
       title: 'Jadwal Pelajaran',
       type: 'item',

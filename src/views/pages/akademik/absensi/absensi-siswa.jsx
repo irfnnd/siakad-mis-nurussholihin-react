@@ -16,12 +16,16 @@ import {
   TextField,
   ToggleButtonGroup,
   ToggleButton,
-  DialogActions
+  DialogActions,
+  CircularProgress
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import SaveIcon from '@mui/icons-material/Save';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+
+// --- IMPORT API ---
+import api from '../../../../services/api'; 
 
 // === Helper ===
 const getTodayDate = () => {
@@ -32,128 +36,152 @@ const getTodayDate = () => {
   return `${yyyy}-${mm}-${dd}`;
 };
 
-// === Mock Data ===
-// Data siswa dipetakan berdasarkan kelas
-const mockSiswaByKelas = {
-  '10A': [
-    { id: 'S-001', nis: '102030', nama: 'Budi Santoso' },
-    { id: 'S-002', nis: '102031', nama: 'Ani Yudhoyono' }
-  ],
-  '10B': [
-    { id: 'S-101', nis: '102040', nama: 'Charlie van Houten' },
-    { id: 'S-102', nis: '102041', nama: 'Dewi Lestari' }
-  ],
-  '11A': [
-    { id: 'S-201', nis: '102050', nama: 'Eka Kurniawan' }
-  ]
-};
-
-// Data absensi yang sudah ada (simulasi)
-const mockExistingAttendance = {
-  // 'YYYY-MM-DD'
-  '2025-11-12': { 
-    'S-002': 'S', // Ani Sakit
-    'S-101': 'A'  // Charlie Alpha
-  }
-};
-
-
 // === Komponen Utama ===
-// Menerima props: role ('admin'/'guru') dan waliKelasInfo
-// Berikan objek sebagai default, sesuai yang diharapkan oleh kode Anda
-const HalamanAbsensiHarian = ({ role = 'guru', waliKelasInfo = { id: '10A', nama: 'Kelas 10A' } }) => {
+const HalamanAbsensiHarian = () => {
   
-  // Cek apakah user adalah Wali Kelas
-  const isWaliKelas = role === 'guru' && !!waliKelasInfo;
+  // 1. AMBIL USER DARI LOCALSTORAGE
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isGuru, setIsGuru] = useState(false);
+  const [myWaliKelasInfo, setMyWaliKelasInfo] = useState(null);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      setCurrentUser(user);
+      
+      const role = user.role ? user.role.toLowerCase() : '';
+      setIsAdmin(role === 'admin');
+      setIsGuru(role === 'guru');
+    }
+  }, []);
 
   // === STATE ===
   const [selectedDate, setSelectedDate] = useState(getTodayDate());
-  // 'selectedKelas' akan di-set oleh Admin (dropdown) atau oleh Wali Kelas (otomatis)
   const [selectedKelas, setSelectedKelas] = useState('');
+  const [selectedSemester, setSelectedSemester] = useState(1); 
   
+  // Data Options
+  const [kelasOptions, setKelasOptions] = useState([]);
+
+  // Data Utama
   const [rows, setRows] = useState([]);
   const [dailyAttendance, setDailyAttendance] = useState({});
+  const [attendanceIds, setAttendanceIds] = useState({}); 
+
   const [loading, setLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
 
-  // === EFEK (LOGIKA OTOMATIS GURU) ===
+  // === 2. FETCH DATA KELAS & DETEKSI WALI KELAS ===
+  const fetchKelasAndInit = async () => {
+    try {
+      const response = await api.get('/kelas');
+      const data = response.data?.data?.kelas || response.data?.data || [];
+      const classesList = Array.isArray(data) ? data : [];
+      
+      setKelasOptions(classesList);
 
-  // Efek 1: Set kelas untuk Wali Kelas secara otomatis saat komponen dimuat
-  useEffect(() => {
-    if (isWaliKelas) {
-      // Asumsi waliKelasInfo memiliki { id: '10A', nama: '10A' }
-      setSelectedKelas(waliKelasInfo.id); 
-    }
-  }, [isWaliKelas, waliKelasInfo]);
-
-  // Efek 2: Muat data untuk Wali Kelas secara otomatis saat tanggal ATAU kelas (dari Efek 1) berubah
-  useEffect(() => {
-    // Hanya jalankan jika dia Wali Kelas dan 'selectedKelas' sudah di-set
-    if (isWaliKelas && selectedKelas) {
-      handleTampilkan();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isWaliKelas, selectedKelas, selectedDate]); // Muat ulang jika tanggal berubah
-  
-
-  // === Handler ===
-  
-  // Fungsi 'handleTampilkan' sekarang digunakan oleh:
-  // 1. Admin (via tombol)
-  // 2. Wali Kelas (via useEffect)
-  const handleTampilkan = () => {
-    if (!selectedKelas) {
-      if (!isWaliKelas) { // Hanya tampilkan error untuk Admin, Guru masih loading
-        setSnackbar({
-          open: true,
-          message: 'Silakan pilih kelas terlebih dahulu.',
-          severity: 'warning'
-        });
+      // JIKA GURU: Cari kelas yang dia ampu
+      if (isGuru && currentUser?.pegawai) {
+        const myPegawaiId = currentUser.pegawai.id;
+        
+        // Cari kelas dimana wali_kelas_id == myPegawaiId
+        const myClass = classesList.find(c => c.wali_kelas_id === myPegawaiId);
+        
+        if (myClass) {
+          setMyWaliKelasInfo({ id: myClass.id, nama: myClass.nama_kelas });
+          setSelectedKelas(myClass.id); // Otomatis pilih kelasnya
+        }
       }
+
+    } catch (error) {
+      console.error("Error fetching kelas:", error);
+      setSnackbar({ open: true, message: 'Gagal memuat daftar kelas.', severity: 'error' });
+    }
+  };
+
+  // Jalankan inisialisasi saat role user sudah terdeteksi
+  useEffect(() => {
+    if (currentUser) {
+        fetchKelasAndInit();
+    }
+  }, [currentUser, isGuru]);
+
+
+  // === 3. FETCH DATA SISWA & ABSENSI ===
+  const handleTampilkan = async () => {
+    if (!selectedKelas) {
+      if (isAdmin) setSnackbar({ open: true, message: 'Silakan pilih kelas.', severity: 'warning' });
       return;
     }
     
     setLoading(true);
-    setTimeout(() => {
-      // Ambil daftar siswa berdasarkan 'selectedKelas'
-      const siswaDiKelas = mockSiswaByKelas[selectedKelas] || [];
-      setRows(siswaDiKelas);
+    try {
+      // A. Ambil Data Siswa di Kelas
+      const resSiswa = await api.get('/siswa', { params: { kelas_id: selectedKelas, limit: 100 } });
+      const siswaList = resSiswa.data?.data?.siswa || [];
       
-      const data = {};
-      const existingData = mockExistingAttendance[selectedDate] || {};
-      
-      siswaDiKelas.forEach((s) => {
-        // Cek apakah sudah ada data absensi di tanggal ini
-        if (existingData[s.id]) {
-          data[s.id] = existingData[s.id];
-        } else {
-          data[s.id] = 'H'; // Default hadir
-        }
+      // B. Ambil Data Absensi Existing
+      const resAbsensi = await api.get('/absensi-harian', { 
+        params: { 
+            kelas_id: selectedKelas,
+            tanggal: selectedDate,
+            limit: 100
+        } 
       });
-      
-      setDailyAttendance(data);
-      setLoading(false);
-      
-      // Hanya tampilkan notifikasi jika BUKAN loading otomatis (Admin)
-      if (!isWaliKelas) {
-        setSnackbar({
-          open: true,
-          message: `Data absensi kelas ${selectedKelas} tanggal ${selectedDate} dimuat.`,
-          severity: 'success'
-        });
+      const absensiExisting = resAbsensi.data?.data?.absensi_harian || [];
+
+      // C. Mapping Data
+      const statusMap = {};
+      const idMap = {};
+
+      // Default 'H'
+      siswaList.forEach(s => { 
+          statusMap[s.id] = 'H'; 
+          idMap[s.id] = null; 
+      });
+
+      // Timpa dengan data DB
+      absensiExisting.forEach(record => {
+          if (record.siswa_id) {
+              statusMap[record.siswa_id] = record.status; 
+              idMap[record.siswa_id] = record.id; 
+          }
+      });
+
+      setRows(siswaList);
+      setDailyAttendance(statusMap);
+      setAttendanceIds(idMap);
+
+      if (isAdmin) {
+        setSnackbar({ open: true, message: `Data dimuat.`, severity: 'success' });
       }
-    }, 800);
+
+    } catch (error) {
+      console.error("Error loading data:", error);
+      setSnackbar({ open: true, message: 'Gagal memuat data.', severity: 'error' });
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // === EFEK OTOMATIS LOAD DATA (Khusus Guru) ===
+  useEffect(() => {
+    // Jika Guru dan kelas sudah terpilih (dari deteksi wali kelas), load otomatis
+    if (isGuru && selectedKelas) {
+      handleTampilkan();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate, selectedKelas, isGuru]);
+
+
+  // === HANDLERS UI ===
   const handleAttendanceChange = (studentId, newStatus) => {
     setDailyAttendance((prev) => ({
       ...prev,
-      [studentId]: newStatus || 'H'
+      [studentId]: newStatus || 'H' 
     }));
   };
 
@@ -161,30 +189,58 @@ const HalamanAbsensiHarian = ({ role = 'guru', waliKelasInfo = { id: '10A', nama
     const updated = {};
     rows.forEach((r) => (updated[r.id] = 'H'));
     setDailyAttendance(updated);
-    setSnackbar({
-      open: true,
-      message: 'Semua siswa ditandai Hadir.',
-      severity: 'info'
-    });
+    setSnackbar({ open: true, message: 'Semua ditandai Hadir (Draft).', severity: 'info' });
   };
 
-  const handleSimpanAbsensi = () => {
+  const handleSimpanAbsensi = async () => {
     setLoading(true);
-    const dataSimpan = rows.map((r) => ({
-      siswaId: r.id,
-      status: dailyAttendance[r.id] || 'H',
-      tanggal: selectedDate,
-      kelas: selectedKelas
-    }));
-    console.log('Data Disimpan:', dataSimpan);
-    setTimeout(() => {
-      setLoading(false);
-      setSnackbar({
-        open: true,
-        message: 'Absensi berhasil disimpan!',
-        severity: 'success'
-      });
-    }, 1000);
+    try {
+        const promises = rows.map(async (siswa) => {
+            const currentStatus = dailyAttendance[siswa.id] || 'H';
+            const recordId = attendanceIds[siswa.id];
+
+            if (recordId) {
+                if (currentStatus === 'H') {
+                    // Delete
+                    try {
+                        await api.delete(`/absensi-harian/${recordId}`);
+                        setAttendanceIds(prev => ({ ...prev, [siswa.id]: null }));
+                    } catch (e) { console.error("Gagal delete", e); }
+                } else {
+                    // Update
+                    await api.put(`/absensi-harian/${recordId}`, {
+                        status: currentStatus,
+                        keterangan: '' 
+                    });
+                }
+            } else {
+                if (currentStatus !== 'H') {
+                    // Create
+                    const response = await api.post('/absensi-harian', {
+                        siswa_id: siswa.id,
+                        tanggal: selectedDate,
+                        status: currentStatus,
+                        semester_id: selectedSemester,
+                        keterangan: ''
+                    });
+                    const newId = response.data?.data?.id;
+                    if(newId) setAttendanceIds(prev => ({ ...prev, [siswa.id]: newId }));
+                }
+            }
+        });
+
+        await Promise.all(promises);
+        setSnackbar({ open: true, message: 'Absensi berhasil disimpan!', severity: 'success' });
+        
+        // Refresh jika admin
+        if (isAdmin) handleTampilkan();
+
+    } catch (error) {
+        console.error("Error saving batch:", error);
+        setSnackbar({ open: true, message: 'Terjadi kesalahan saat menyimpan.', severity: 'error' });
+    } finally {
+        setLoading(false);
+    }
   };
 
   const handleCloseSnackbar = () => setSnackbar((prev) => ({ ...prev, open: false }));
@@ -192,7 +248,7 @@ const HalamanAbsensiHarian = ({ role = 'guru', waliKelasInfo = { id: '10A', nama
   // === Kolom DataGrid ===
   const columns = [
     { field: 'nis', headerName: 'NIS', width: 130 },
-    { field: 'nama', headerName: 'Nama Siswa', flex: 1, minWidth: 250 },
+    { field: 'nama_lengkap', headerName: 'Nama Siswa', flex: 1, minWidth: 250 },
     {
       field: 'absensi',
       headerName: 'Status Kehadiran',
@@ -210,35 +266,25 @@ const HalamanAbsensiHarian = ({ role = 'guru', waliKelasInfo = { id: '10A', nama
             aria-label="Status Kehadiran"
             size="small"
           >
-            <ToggleButton value="H" color="success" sx={{ fontWeight: 600 }}>
-              H
-            </ToggleButton>
-            <ToggleButton value="S" color="info" sx={{ fontWeight: 600 }}>
-              S
-            </ToggleButton>
-            <ToggleButton value="I" color="warning" sx={{ fontWeight: 600 }}>
-              I
-            </ToggleButton>
-            <ToggleButton value="A" color="error" sx={{ fontWeight: 600 }}>
-              A
-            </ToggleButton>
+            <ToggleButton value="H" color="success" sx={{ fontWeight: 600 }}>H</ToggleButton>
+            <ToggleButton value="S" color="info" sx={{ fontWeight: 600 }}>S</ToggleButton>
+            <ToggleButton value="I" color="warning" sx={{ fontWeight: 600 }}>I</ToggleButton>
+            <ToggleButton value="A" color="error" sx={{ fontWeight: 600 }}>A</ToggleButton>
           </ToggleButtonGroup>
         );
       }
     }
   ];
 
-  // === Render ===
+  // === RENDER ===
   return (
     <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 2 } }}>
       {/* FILTER */}
       <Card sx={{ mb: 1, p: 2 }}>
-        {/*
-          CATATAN: Tetap menggunakan 'Grid size' sesuai permintaan Anda. 
-          Prop 'spacing={2}' pada item Grid kedua tidak valid dan akan diabaikan oleh MUI.
-        */}
         <Grid container spacing={2} alignItems="center">
-          <Grid size={{ xs: 6, sm: 6, md: 2 }}>
+          
+          {/* Pilih Tanggal */}
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <TextField
               label="Tanggal"
               type="date"
@@ -250,39 +296,48 @@ const HalamanAbsensiHarian = ({ role = 'guru', waliKelasInfo = { id: '10A', nama
             />
           </Grid>
 
-          {/* --- KONDISI ROLE DIMULAI --- */}
-          {isWaliKelas ? (
-            // TAMPILAN GURU/WALI KELAS (Read-only TextField)
-            <Grid size={{ xs: 6, sm: 6, md: 2 }}>
-              <TextField
-                label="Kelas Anda"
-                size="small"
-                fullWidth
-                value={waliKelasInfo.nama} // Asumsi props: { id: '10A', nama: '10A' }
-                InputProps={{ readOnly: true }}
-                sx={{ '& .MuiInputBase-input': { fontWeight: 600, color: 'primary.main' } }}
-              />
-            </Grid>
-          ) : (
-            // TAMPILAN ADMIN (Dropdown)
-            <Grid size={{ xs: 6, sm: 6, md: 2 }} spacing={2}> {/* Tetap 'size' & 'spacing' */}
-              <FormControl fullWidth size="small" required>
+          {/* Bagian Pilih Kelas (Beda tampilan Admin vs Guru) */}
+          {isAdmin ? (
+            // --- TAMPILAN ADMIN: Dropdown ---
+            <Grid size={{ xs: 12, sm: 6, md: 3 }} spacing={2}>
+              <FormControl fullWidth size="small">
                 <InputLabel>Pilih Kelas</InputLabel>
-                <Select value={selectedKelas} label="Pilih Kelas" onChange={(e) => setSelectedKelas(e.target.value)}>
-                  {/* Di aplikasi nyata, Anda akan fetch daftar kelas ini */}
-                  <MenuItem value="10A">10A</MenuItem>
-                  <MenuItem value="10B">10B</MenuItem>
-                  <MenuItem value="11A">11A</MenuItem>
+                <Select 
+                  value={selectedKelas} 
+                  label="Pilih Kelas" 
+                  onChange={(e) => setSelectedKelas(e.target.value)}
+                >
+                   {kelasOptions.map((k) => (
+                      <MenuItem key={k.id} value={k.id}>
+                        {k.nama_kelas}
+                      </MenuItem>
+                   ))}
                 </Select>
               </FormControl>
             </Grid>
+          ) : (
+            // --- TAMPILAN GURU: Read Only Field ---
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              {myWaliKelasInfo ? (
+                <TextField
+                  label="Kelas Perwalian"
+                  size="small"
+                  fullWidth
+                  value={myWaliKelasInfo.nama} 
+                  InputProps={{ readOnly: true }}
+                  sx={{ '& .MuiInputBase-input': { fontWeight: 'bold', color: 'primary.main' } }}
+                />
+              ) : (
+                <Alert severity="warning" sx={{ py: 0, alignItems: 'center', fontSize: '0.8rem' }}>
+                   Anda belum diatur sebagai Wali Kelas
+                </Alert>
+              )}
+            </Grid>
           )}
-          {/* --- KONDISI ROLE SELESAI --- */}
           
-
-          {/* Tombol Tampilkan hanya untuk Admin */}
-          {!isWaliKelas && (
-            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+          {/* Tombol Tampilkan (Hanya Admin yang butuh klik manual) */}
+          {isAdmin && (
+            <Grid size={{ xs: 12, sm: 12, md: 2 }}>
               <Button fullWidth variant="contained" startIcon={<PageviewIcon />} onClick={handleTampilkan}>
                 Tampilkan
               </Button>
@@ -293,7 +348,6 @@ const HalamanAbsensiHarian = ({ role = 'guru', waliKelasInfo = { id: '10A', nama
       </Card>
 
       {/* DATA GRID */}
-      {/* Cek 'rows.length > 0' untuk menampilkan tabel */}
       {rows.length > 0 && (
         <Fade in={true}>
           <Card>
@@ -311,13 +365,10 @@ const HalamanAbsensiHarian = ({ role = 'guru', waliKelasInfo = { id: '10A', nama
             >
               <Box>
                 <Typography variant="h6" fontWeight={600}>
-                  Absensi Harian Kelas {selectedKelas}
+                  Absensi Harian
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Tanggal:{' '}
-                  {new Date(selectedDate).toLocaleDateString('id-ID', {
-                    dateStyle: 'full'
-                  })}
+                  Tanggal: {new Date(selectedDate).toLocaleDateString('id-ID', { dateStyle: 'full' })}
                 </Typography>
               </Box>
               <Button variant="outlined" size="small" startIcon={<CheckCircleOutlineIcon />} onClick={handleMarkAllPresent}>
