@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router-dom';
 // routes
 import MainRoutes from './MainRoutes';
 import KurikulumRoutes from './KurikulumRoutes';
+import JadwalRoutes from './JadwalRoute';
 import AkademikRoutes from './AkademikRoutes';
 import DataRoutes from './DataRoutes';
 import UserRoutes from './UserRoutes';
@@ -32,9 +33,16 @@ const router = createBrowserRouter([
   element: <ProtectedRoutes allowedRoles={['guru', 'admin']} />,
   children: [
     MainRoutes,
-    AkademikRoutes
+    AkademikRoutes,
   ]
-}
+},
+{
+  element: <ProtectedRoutes allowedRoles={['guru']} />,
+  children: [
+    JadwalRoutes,
+  ]
+},
+
 ], {
 });
 

@@ -6,33 +6,33 @@ import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import PrintIcon from '@mui/icons-material/Print';
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import NoteAltIcon from '@mui/icons-material/NoteAlt';
-// --- Ikon Baru Ditambahkan ---
 import School from '@mui/icons-material/School';
 import Person from '@mui/icons-material/Person';
 import MeetingRoom from '@mui/icons-material/MeetingRoom';
 import AutoStories from '@mui/icons-material/AutoStories';
 import Schedule from '@mui/icons-material/Schedule';
+import EventRepeatIcon from '@mui/icons-material/EventRepeat'; 
 
 // --- OBJEK IKON ---
 const icons = {
   IconDashboard: Dashboard,
   IconUsersGroup: Groups,
   IconUserAdd: PersonAdd,
-  IconCalendar: CalendarMonth,
+  IconCalendar: CalendarMonth, // Digunakan untuk Tahun Semester
   IconPrint: PrintIcon,
   IconChecklist: ChecklistIcon,
   IconNoteAlt: NoteAltIcon,
-  // --- Ikon Baru Ditambahkan ---
   IconSchool: School,
   IconUser: Person,
-  IconRoom: MeetingRoom,
-  IconNotebook: AutoStories,
-  IconSchedule: Schedule
+  IconRoom: MeetingRoom,     // Digunakan untuk Data Kelas
+  IconNotebook: AutoStories, // Digunakan untuk Mata Pelajaran
+  IconSchedule: Schedule,    // Digunakan untuk Jadwal
+  IconTahun: EventRepeatIcon
 };
 
 // ==============================|| MENU ITEMS ||============================== //
 
-// Dashboard
+// 1. Dashboard
 const dashboard = {
   id: 'dashboard',
   title: 'Dashboard',
@@ -50,39 +50,36 @@ const dashboard = {
   ]
 };
 
-// Manajemen Data
+// 2. Manajemen Data (Hanya Admin)
 const manajemenData = {
   id: 'manajemen-data',
   title: 'Manajemen Data',
   type: 'group',
-  roles: ['admin'], // <-- HANYA BISA DILIHAT OLEH ADMIN
+  roles: ['admin'], 
   children: [
-    // --- PERUBAHAN: 'type: collapse' dihapus ---
-    // Item sekarang langsung di bawah 'group'
     {
       id: 'data-siswa',
       title: 'Data Siswa',
       type: 'item',
       url: '/data/siswa',
-      icon: icons.IconSchool // <-- Ikon ditambahkan
+      icon: icons.IconSchool
     },
     {
       id: 'data-pegawai',
       title: 'Data Pegawai',
       type: 'item',
       url: '/data/pegawai',
-      icon: icons.IconUser // <-- Ikon ditambahkan
+      icon: icons.IconUser
     }
   ]
 };
 
-// Akademik
+// 3. Akademik (Admin & Guru)
 const akademik = {
   id: 'manajemen-akademik',
   title: 'Manajemen Akademik',
   type: 'group',
-  // --- PERUBAHAN: 'roles' disesuaikan dengan komentar Anda ---
-  roles: ['guru', 'admin'], // <-- BISA DILIHAT OLEH ADMIN & GURU
+  roles: ['admin', 'guru'],
   children: [
     {
       id: 'input-nilai',
@@ -108,47 +105,68 @@ const akademik = {
   ]
 };
 
-// Kurikulum
+// 4. Kurikulum (Campuran Hak Akses)
 const kurikulum = {
   id: 'kurikulum',
   title: 'Kurikulum',
   type: 'group',
-  roles: ['admin'], // <-- HANYA BISA DILIHAT OLEH ADMIN
+  roles: ['admin'], // Grup utama bisa dilihat keduanya, tapi item di dalamnya difilter lagi
   children: [
-    // --- PERUBAHAN: 'type: collapse' dihapus ---
-    // Item sekarang langsung di bawah 'group'
     {
       id: 'data-kelas',
       title: 'Data Kelas',
       type: 'item',
       url: '/kurikulum/data-kelas',
-      icon: icons.IconRoom // <-- Ikon ditambahkan
+      icon: icons.IconRoom,
     },
     {
       id: 'mata-pelajaran',
       title: 'Mata Pelajaran',
       type: 'item',
       url: '/kurikulum/mata-pelajaran',
-      icon: icons.IconNotebook // <-- Ikon ditambahkan
+      icon: icons.IconNotebook,
     },
     {
       id: 'tahun-semester',
       title: 'Tahun Semester',
       type: 'item',
       url: '/kurikulum/tahun-semester',
-      icon: icons.IconCalendar // <-- Ikon ditambahkan
+      icon: icons.IconCalendar, // Menggunakan icon kalender
     },
     {
       id: 'jadwal-pelajaran',
       title: 'Jadwal Pelajaran',
       type: 'item',
       url: '/kurikulum/jadwal-pelajaran',
-      icon: icons.IconSchedule // <-- Ikon ditambahkan
+      icon: icons.IconSchedule,
+    }
+  ]
+};
+const jadwal = {
+  id: 'jadwal-pelajaran',
+  title: 'Jadwal',
+  type: 'group',
+  roles: [ 'guru'], // Grup utama bisa dilihat keduanya, tapi item di dalamnya difilter lagi
+  children: [
+    {
+      id: 'mata-pelajaran',
+      title: 'Mata Pelajaran',
+      type: 'item',
+      url: '/jadwal/mata-pelajaran',
+      icon: icons.IconNotebook,
+    },
+    {
+      id: 'jadwal-pelajaran',
+      title: 'Jadwal Pelajaran',
+      type: 'item',
+      url: '/jadwal/jadwal-pelajaran',
+      icon: icons.IconSchedule,
     }
   ]
 };
 
-// Manajemen User
+
+// 5. Manajemen User (Hanya Admin)
 const manajemenUser = {
   id: 'manajemen-user',
   title: 'Manajemen User',
@@ -167,7 +185,7 @@ const manajemenUser = {
 
 // ==============================|| EKSPOR MENU UTAMA ||============================== //
 const menuItems = {
-  items: [dashboard, akademik, kurikulum, manajemenData, manajemenUser]
+  items: [dashboard, akademik, kurikulum, manajemenData, manajemenUser, jadwal]
 };
 
 export default menuItems;
