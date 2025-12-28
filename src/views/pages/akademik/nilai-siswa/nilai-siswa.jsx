@@ -54,8 +54,8 @@ const HalamanNilaiSiswa = () => {
   }, []);
 
   // === STATE ===
-  const [selectedTahun, setSelectedTahun] = useState(''); // Init kosong agar dinamis
-  const [selectedSemester, setSelectedSemester] = useState(''); // Init kosong agar dinamis
+  const [selectedTahun, setSelectedTahun] = useState('');
+  const [selectedSemester, setSelectedSemester] = useState('');
   
   // State untuk Filter (Dropdown)
   const [selectedKelas, setSelectedKelas] = useState('');
@@ -94,15 +94,35 @@ const HalamanNilaiSiswa = () => {
           api.get('/semester')
         ]);
         
-        // Normalize Data Mapel
+        // --- 1. SET DATA MAPEL & DEFAULT ---
         const dataMapel = resMapel.data?.data?.mata_pelajaran || resMapel.data?.data || [];
-        setMapelOptions(Array.isArray(dataMapel) ? dataMapel : []);
+        const mapelList = Array.isArray(dataMapel) ? dataMapel : [];
+        setMapelOptions(mapelList);
+        // Otomatis pilih mapel pertama jika ada
+        if (mapelList.length > 0) {
+            setSelectedMapel(mapelList[0].id);
+        }
 
-        // Normalize Data Kelas
+        // --- 2. SET DATA KELAS & DEFAULT (Sesuai Role) ---
         const dataKelas = resKelas.data?.data?.kelas || resKelas.data?.data || [];
-        setKelasOptions(Array.isArray(dataKelas) ? dataKelas : []);
+        let processedKelasOptions = Array.isArray(dataKelas) ? dataKelas : [];
         
-        // Normalize Tahun & Set Default Aktif
+        if (currentUser?.role === 'Guru' && currentUser?.pegawai?.id) {
+            // Filter hanya kelas yang diampu oleh guru ini
+            const myClass = processedKelasOptions.find(k => k.wali_kelas_id === currentUser.pegawai.id);
+            if (myClass) {
+                processedKelasOptions = [myClass];
+                setSelectedKelas(myClass.id);
+            }
+        } else {
+             // Admin: Otomatis pilih kelas pertama jika belum dipilih
+             if (processedKelasOptions.length > 0) {
+                 setSelectedKelas(processedKelasOptions[0].id);
+             }
+        }
+        setKelasOptions(processedKelasOptions);
+        
+        // --- 3. SET TAHUN & DEFAULT ---
         const tahunData = resTahun.data?.data?.tahun_ajaran || resTahun.data?.data || [];
         const tahunList = Array.isArray(tahunData) ? tahunData : [];
         setTahunOptions(tahunList);
@@ -114,7 +134,7 @@ const HalamanNilaiSiswa = () => {
             setSelectedTahun(tahunList[0].tahun); // Fallback ke yang pertama
         }
 
-        // Normalize Semester & Set Default Aktif
+        // --- 4. SET SEMESTER & DEFAULT ---
         const semData = resSem.data?.data?.semester || resSem.data?.data || [];
         const semList = Array.isArray(semData) ? semData : [];
         setSemesterOptions(semList);
@@ -130,8 +150,12 @@ const HalamanNilaiSiswa = () => {
         console.error("Error fetching master data:", error);
       }
     };
-    fetchOptions();
-  }, []);
+    
+    // Jalankan fetch hanya jika currentUser sudah dimuat
+    if (currentUser) {
+        fetchOptions();
+    }
+  }, [currentUser]);
 
   // === 2. HANDLE TAMPILKAN (INIT PENGAJARAN) ===
   const handleTampilkan = async () => {
@@ -146,7 +170,6 @@ const HalamanNilaiSiswa = () => {
 
     try {
       // --- LANGKAH 1: FETCH SISWA DULU (AGAR TABEL MUNCUL) ---
-      // Ini prioritas utama. User harus melihat daftar siswa meskipun belum ada nilai.
       const resSiswa = await api.get('/siswa', { params: { kelas_id: selectedKelas, limit: 1000 } });
       const rawStudents = resSiswa.data?.data?.siswa || [];
       const studentList = Array.isArray(rawStudents) ? rawStudents : [];
@@ -155,7 +178,7 @@ const HalamanNilaiSiswa = () => {
       if (studentList.length === 0) {
          setSnackbar({ open: true, message: 'Tidak ada siswa ditemukan di kelas ini.', severity: 'info' });
          setLoading(false);
-         return; // Tidak perlu lanjut jika tidak ada siswa
+         return; 
       }
 
       // --- LANGKAH 2: CARI / BUAT PENGAJARAN (CONTEXT NILAI) ---
@@ -196,8 +219,7 @@ const HalamanNilaiSiswa = () => {
                 });
                 currentPengajaran = createRes.data?.data;
 
-                // --- PERBAIKAN: AUTO-CREATE KOLOM PTS & PAS ---
-                // Karena ini pengajaran baru, kita buatkan kolom wajib ini otomatis
+                // AUTO-CREATE KOLOM PTS & PAS
                 if (currentPengajaran?.id) {
                    await Promise.all([
                       api.post('/penilaian', { pengajaran_id: currentPengajaran.id, nama_penilaian: 'PTS', tipe: 'PTS' }),
@@ -253,7 +275,6 @@ const HalamanNilaiSiswa = () => {
           } else { setGrades([]); }
 
       } else {
-          // Jika Pengajaran Gagal diload, reset nilai tapi SISWA TETAP TAMPIL
           setAssignments([]);
           setGrades([]);
           setSnackbar({ open: true, message: 'Data siswa dimuat (Mode Baca - Pengajar belum diset).', severity: 'info' });
@@ -503,7 +524,7 @@ const HalamanNilaiSiswa = () => {
         <Grid container spacing={2} alignItems="center">
           
           {/* FILTER SEMESTER & TAHUN */}
-          <Grid size={{ xs: 5, sm: 4, md: 1.5 }}>
+          <Grid item size={{ xs: 5, sm: 4, md: 2.5 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Tahun Ajaran</InputLabel>
               <Select value={selectedTahun} onChange={(e) => setSelectedTahun(e.target.value)} label="Tahun Ajaran">
@@ -514,7 +535,7 @@ const HalamanNilaiSiswa = () => {
             </FormControl>
           </Grid>
 
-          <Grid size={{ xs: 4, sm: 4, md: 1.5 }}>
+          <Grid item size={{ xs: 4, sm: 4, md: 2 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Semester</InputLabel>
               <Select value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value)} label="Semester">
@@ -524,21 +545,33 @@ const HalamanNilaiSiswa = () => {
           </Grid>
 
           {/* FILTER KELAS */}
-          <Grid size={{ xs: 3, sm: 4, md: 3 }}>
-            <FormControl fullWidth size="small">
-                <InputLabel>Kelas</InputLabel>
-                <Select value={selectedKelas} label="Pilih Kelas" onChange={(e) => setSelectedKelas(e.target.value)}>
-                    {kelasOptions.map((k) => (
-                        <MenuItem key={k.id} value={k.id}>
-                            {k.nama_kelas}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
+          <Grid item size={{ xs: 3, sm: 4, md: 2 }}>
+            {/* TAMPILKAN TEXT FIELD JIKA GURU & WALI KELAS */}
+            {currentUser?.role === 'Guru' && kelasOptions.length === 1 ? (
+                <TextField
+                    label="Kelas Perwalian"
+                    size="small"
+                    fullWidth
+                    value={kelasOptions[0].nama_kelas}
+                    InputProps={{ readOnly: true }}
+                    sx={{ '& .MuiInputBase-input': { fontWeight: 'bold', color: 'primary.main' } }}
+                />
+            ) : (
+                <FormControl fullWidth size="small">
+                    <InputLabel>Kelas</InputLabel>
+                    <Select value={selectedKelas} label="Pilih Kelas" onChange={(e) => setSelectedKelas(e.target.value)}>
+                        {kelasOptions.map((k) => (
+                            <MenuItem key={k.id} value={k.id}>
+                                {k.nama_kelas}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+            )}
           </Grid>
 
           {/* FILTER MAPEL */}
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid item size={{ xs: 7, sm: 6, md: 3 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Mata Pelajaran</InputLabel>
               <Select value={selectedMapel} onChange={(e) => setSelectedMapel(e.target.value)} label="Mata Pelajaran">
@@ -551,7 +584,7 @@ const HalamanNilaiSiswa = () => {
             </FormControl>
           </Grid>
           
-          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+          <Grid item size={{ xs: 5, sm: 6, md: 2.5 }}>
             <Button fullWidth variant="contained" startIcon={<PageviewIcon />} onClick={handleTampilkan} disabled={loading}>
               {loading ? '...' : 'Tampilkan'}
             </Button>
@@ -560,57 +593,53 @@ const HalamanNilaiSiswa = () => {
       </Card>
 
       {/* KONTEN UTAMA */}
-      {/* Tampilkan tabel jika ada siswa yang ditemukan */}
-      {students.length > 0 ? (
+      {/* Selalu render tabel jika sudah ada pengajaranId, meski students kosong */}
+      {pengajaranId && (
         <Fade in>
           <Box>
-            {/* CONFIG BOBOT (Hanya jika pengajaranId ada / guru valid) */}
-            {pengajaranId && (
-                <Card sx={{ mb: 1, p: { xs: 1.5, sm: 1.5, md: 2 } }}>
-                <Typography variant="h6" gutterBottom>
-                    Konfigurasi Bobot Nilai
-                </Typography>
-                <Grid container spacing={{ xs: 1.5, sm: 2 }} alignItems="center">
-                    {['harian', 'pts', 'pas'].map((key) => (
-                    <Grid item size={{ xs: 4, sm: 3, md: 2 }} key={key}>
-                        <TextField
-                        label={`Bobot ${key.toUpperCase()}`}
-                        type="number"
-                        size="small"
-                        fullWidth
-                        value={bobot[`bobot_${key}`]} 
-                        onChange={(e) => setBobot(b => ({ ...b, [`bobot_${key}`]: parseFloat(e.target.value) || 0 }))}
-                        InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
-                        />
-                    </Grid>
-                    ))}
-                    <Grid item size={{ xs: 6, sm: 3, md: 2 }}>
-                    <Button fullWidth variant="contained" startIcon={<SaveIcon />} onClick={handleSimpanBobot} disabled={bobotError}>
-                        Simpan
-                    </Button>
-                    </Grid>
-                    <Grid item size={{ xs: 6, sm: 6, md: 4 }}>
-                    <Typography color={bobotError ? 'error' : 'success'}>
-                        Total: {totalBobot}% {bobotError && '(harus 100%)'}
-                    </Typography>
-                    </Grid>
+            {/* CONFIG BOBOT */}
+            <Card sx={{ mb: 1, p: { xs: 1.5, sm: 1.5, md: 2 } }}>
+              <Typography variant="h6" gutterBottom>
+                Konfigurasi Bobot Nilai
+              </Typography>
+              <Grid container spacing={{ xs: 1.5, sm: 2 }} alignItems="center">
+                {['harian', 'pts', 'pas'].map((key) => (
+                  <Grid item size={{ xs: 4, sm: 3, md: 2 }} key={key}>
+                    <TextField
+                      label={`Bobot ${key.toUpperCase()}`}
+                      type="number"
+                      size="small"
+                      fullWidth
+                      value={bobot[`bobot_${key}`]} 
+                      onChange={(e) => setBobot(b => ({ ...b, [`bobot_${key}`]: parseFloat(e.target.value) || 0 }))}
+                      InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
+                    />
+                  </Grid>
+                ))}
+                <Grid item size={{ xs: 6, sm: 3, md: 2 }}>
+                  <Button fullWidth variant="contained" startIcon={<SaveIcon />} onClick={handleSimpanBobot} disabled={bobotError}>
+                    Simpan
+                  </Button>
                 </Grid>
-                </Card>
-            )}
+                <Grid item size={{ xs: 6, sm: 6, md: 4 }}>
+                  <Typography color={bobotError ? 'error' : 'success'}>
+                    Total: {totalBobot}% {bobotError && '(harus 100%)'}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Card>
 
             {/* TABEL */}
             <Card>
               <Box sx={{ p: { xs: 1.5, sm: 1.5, md: 2 }, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="h6">Buku Nilai Siswa</Typography>
-                {pengajaranId && (
-                    <Button variant="outlined" startIcon={<AddIcon />} onClick={handleOpenAddDialog}>
-                    Tambah Kolom Nilai
-                    </Button>
-                )}
+                <Button variant="outlined" startIcon={<AddIcon />} onClick={handleOpenAddDialog}>
+                  Tambah Kolom Nilai
+                </Button>
               </Box>
               
               {/* PESAN JIKA BELUM ADA KOLOM */}
-              {pengajaranId && Array.isArray(assignments) && assignments.length === 0 && (
+              {Array.isArray(assignments) && assignments.length === 0 && (
                 <Alert severity="info" sx={{ m: 2 }}>
                   Belum ada kolom penilaian untuk mata pelajaran ini. Silakan klik "Tambah Kolom Nilai" (misal: Tugas 1, UH 1) untuk mulai menginput nilai.
                 </Alert>
@@ -637,11 +666,6 @@ const HalamanNilaiSiswa = () => {
             </Card>
           </Box>
         </Fade>
-      ) : (
-         /* Jika tidak ada siswa tetapi sudah loading selesai */
-         !loading && selectedKelas && selectedMapel && (
-             <Alert severity="info" sx={{ mt: 2 }}>Tidak ada siswa ditemukan di kelas ini.</Alert>
-         )
       )}
 
       {/* DIALOG TAMBAH PENILAIAN */}
