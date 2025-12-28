@@ -19,18 +19,25 @@ import {
   TextField,
   InputAdornment,
   CircularProgress,
-  Stack
+  Stack,
+  Tabs,
+  Tab,
+  Chip
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import SaveIcon from '@mui/icons-material/Save';
 import WarningIcon from '@mui/icons-material/Warning';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import SchoolIcon from '@mui/icons-material/School';
+import UploadIcon from '@mui/icons-material/Upload'; // Icon baru
 
 // --- IMPORT API ---
 import api from '../../../../services/api';
 
-// === HELPER FUNCTION ===
+// === HELPER FUNCTIONS ===
 const getAverage = (arr) => {
   const valid = arr.filter((n) => typeof n === 'number' && !isNaN(n));
   return valid.length ? valid.reduce((a, b) => a + b, 0) / valid.length : 0;
@@ -43,6 +50,17 @@ const getPredikat = (nilai) => {
   return 'D';
 };
 
+const getDeskripsi = (predikat, aspek) => {
+    const awalan = aspek === 'Pengetahuan' ? 'Memahami' : 'Terampil dalam';
+    switch (predikat) {
+        case 'A': return `Sangat baik dalam ${awalan} materi.`;
+        case 'B': return `Baik dalam ${awalan} materi.`;
+        case 'C': return `Cukup dalam ${awalan} materi.`;
+        case 'D': return `Perlu bimbingan dalam ${awalan} materi.`;
+        default: return '-';
+    }
+};
+
 // === KOMPONEN UTAMA ===
 const HalamanNilaiSiswa = () => {
   
@@ -53,32 +71,36 @@ const HalamanNilaiSiswa = () => {
     if (userStr) setCurrentUser(JSON.parse(userStr));
   }, []);
 
-  // === STATE ===
-  const [selectedTahun, setSelectedTahun] = useState('');
-  const [selectedSemester, setSelectedSemester] = useState('');
-  
-  // State untuk Filter (Dropdown)
+  // === STATE UI ===
+  const [tabValue, setTabValue] = useState(0); 
+  const [loading, setLoading] = useState(false);
+  const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
+  // === STATE FILTER ===
+  const [selectedTahun, setSelectedTahun] = useState('2024/2025');
+  const [selectedSemester, setSelectedSemester] = useState('Ganjil');
   const [selectedKelas, setSelectedKelas] = useState('');
   const [selectedMapel, setSelectedMapel] = useState(''); 
   
-  // State Data Master (Opsi Dropdown)
+  // === STATE DATA MASTER ===
   const [kelasOptions, setKelasOptions] = useState([]);
   const [mapelOptions, setMapelOptions] = useState([]);
   const [tahunOptions, setTahunOptions] = useState([]);
   const [semesterOptions, setSemesterOptions] = useState([]);
 
-  // State Data Utama
-  const [pengajaranId, setPengajaranId] = useState(null); // ID Kunci (Konteks)
+  // === STATE DATA UTAMA ===
+  const [pengajaranId, setPengajaranId] = useState(null);
+  const [bobotId, setBobotId] = useState(null); 
   const [students, setStudents] = useState([]);
-  const [assignments, setAssignments] = useState([]); // Model: Penilaian
-  const [grades, setGrades] = useState([]); // Model: Nilai
-  const [bobot, setBobot] = useState({ bobot_harian: 0, bobot_pts: 0, bobot_pas: 0 }); // Model: KonfigurasiBobot
+  const [assignments, setAssignments] = useState([]); 
+  const [grades, setGrades] = useState([]); 
+  const [bobot, setBobot] = useState({ bobot_harian: 0, bobot_pts: 0, bobot_pas: 0 }); 
 
-  const [loading, setLoading] = useState(false);
-  const [openAddDialog, setOpenAddDialog] = useState(false);
+  // === STATE FORM TAMBAH ===
   const [newAssignmentName, setNewAssignmentName] = useState('');
   const [newAssignmentType, setNewAssignmentType] = useState('Harian');
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [newAssignmentKategori, setNewAssignmentKategori] = useState('Pengetahuan');
 
   const totalBobot = (parseFloat(bobot.bobot_harian) || 0) + (parseFloat(bobot.bobot_pts) || 0) + (parseFloat(bobot.bobot_pas) || 0);
   const bobotError = totalBobot !== 100;
@@ -94,70 +116,39 @@ const HalamanNilaiSiswa = () => {
           api.get('/semester')
         ]);
         
-        // --- 1. SET DATA MAPEL & DEFAULT ---
-        const dataMapel = resMapel.data?.data?.mata_pelajaran || resMapel.data?.data || [];
-        const mapelList = Array.isArray(dataMapel) ? dataMapel : [];
-        setMapelOptions(mapelList);
-        // Otomatis pilih mapel pertama jika ada
-        if (mapelList.length > 0) {
-            setSelectedMapel(mapelList[0].id);
-        }
-
-        // --- 2. SET DATA KELAS & DEFAULT (Sesuai Role) ---
+        setMapelOptions(resMapel.data?.data?.mata_pelajaran || resMapel.data?.data || []);
+        
         const dataKelas = resKelas.data?.data?.kelas || resKelas.data?.data || [];
         let processedKelasOptions = Array.isArray(dataKelas) ? dataKelas : [];
         
+        // Filter Kelas untuk Guru Wali
         if (currentUser?.role === 'Guru' && currentUser?.pegawai?.id) {
-            // Filter hanya kelas yang diampu oleh guru ini
-            const myClass = processedKelasOptions.find(k => k.wali_kelas_id === currentUser.pegawai.id);
+            const myClass = processedKelasOptions.find(k => String(k.wali_kelas_id) === String(currentUser.pegawai.id));
             if (myClass) {
                 processedKelasOptions = [myClass];
                 setSelectedKelas(myClass.id);
             }
-        } else {
-             // Admin: Otomatis pilih kelas pertama jika belum dipilih
-             if (processedKelasOptions.length > 0) {
-                 setSelectedKelas(processedKelasOptions[0].id);
-             }
         }
         setKelasOptions(processedKelasOptions);
         
-        // --- 3. SET TAHUN & DEFAULT ---
         const tahunData = resTahun.data?.data?.tahun_ajaran || resTahun.data?.data || [];
-        const tahunList = Array.isArray(tahunData) ? tahunData : [];
-        setTahunOptions(tahunList);
-        
-        const activeTahun = tahunList.find(t => t.status === 'Aktif');
-        if (activeTahun) {
-            setSelectedTahun(activeTahun.tahun); 
-        } else if (tahunList.length > 0) {
-            setSelectedTahun(tahunList[0].tahun); // Fallback ke yang pertama
-        }
+        setTahunOptions(Array.isArray(tahunData) ? tahunData : []);
+        const activeTahun = Array.isArray(tahunData) ? tahunData.find(t => t.status === 'Aktif') : null;
+        if (activeTahun) setSelectedTahun(activeTahun.tahun); 
 
-        // --- 4. SET SEMESTER & DEFAULT ---
         const semData = resSem.data?.data?.semester || resSem.data?.data || [];
-        const semList = Array.isArray(semData) ? semData : [];
-        setSemesterOptions(semList);
-        
-        const activeSem = semList.find(s => s.status === 'Aktif');
-        if (activeSem) {
-            setSelectedSemester(activeSem.id);
-        } else if (semList.length > 0) {
-            setSelectedSemester(semList[0].id); // Fallback ke yang pertama
-        }
+        setSemesterOptions(Array.isArray(semData) ? semData : []);
+        const activeSem = Array.isArray(semData) ? semData.find(s => s.status === 'Aktif') : null;
+        if (activeSem) setSelectedSemester(activeSem.id);
 
       } catch (error) {
         console.error("Error fetching master data:", error);
       }
     };
-    
-    // Jalankan fetch hanya jika currentUser sudah dimuat
-    if (currentUser) {
-        fetchOptions();
-    }
+    if (currentUser) fetchOptions();
   }, [currentUser]);
 
-  // === 2. HANDLE TAMPILKAN (INIT PENGAJARAN) ===
+  // === 2. HANDLE TAMPILKAN ===
   const handleTampilkan = async () => {
     if (!selectedKelas || !selectedMapel || !selectedSemester) {
       setSnackbar({ open: true, message: 'Harap lengkapi filter (Kelas, Mapel, Semester).', severity: 'warning' });
@@ -166,10 +157,10 @@ const HalamanNilaiSiswa = () => {
     
     setLoading(true);
     setPengajaranId(null);
-    setStudents([]); // Reset students agar loading state jelas
+    setBobotId(null); 
+    setStudents([]); 
 
     try {
-      // --- LANGKAH 1: FETCH SISWA DULU (AGAR TABEL MUNCUL) ---
       const resSiswa = await api.get('/siswa', { params: { kelas_id: selectedKelas, limit: 1000 } });
       const rawStudents = resSiswa.data?.data?.siswa || [];
       const studentList = Array.isArray(rawStudents) ? rawStudents : [];
@@ -181,7 +172,6 @@ const HalamanNilaiSiswa = () => {
          return; 
       }
 
-      // --- LANGKAH 2: CARI / BUAT PENGAJARAN (CONTEXT NILAI) ---
       let currentPengajaran = null;
       try {
         const resPengajaran = await api.get('/pengajaran', {
@@ -195,15 +185,11 @@ const HalamanNilaiSiswa = () => {
         let pList = resPengajaran.data?.data?.pengajaran || resPengajaran.data?.data;
         if (Array.isArray(pList)) currentPengajaran = pList[0];
 
-        // Jika tidak ada, coba buat otomatis
         if (!currentPengajaran) {
             let guruIdToAssign = null;
-            
-            // Cek Guru dari Login
             if (currentUser?.role === 'Guru' && currentUser?.pegawai?.id) {
                 guruIdToAssign = currentUser.pegawai.id;
             } else {
-                // Cek Wali Kelas dari Opsi Kelas
                 const selectedKelasObj = kelasOptions.find(k => k.id === selectedKelas);
                 if (selectedKelasObj?.wali_kelas_id) {
                     guruIdToAssign = selectedKelasObj.wali_kelas_id;
@@ -219,24 +205,22 @@ const HalamanNilaiSiswa = () => {
                 });
                 currentPengajaran = createRes.data?.data;
 
-                // AUTO-CREATE KOLOM PTS & PAS
                 if (currentPengajaran?.id) {
                    await Promise.all([
-                      api.post('/penilaian', { pengajaran_id: currentPengajaran.id, nama_penilaian: 'PTS', tipe: 'PTS' }),
-                      api.post('/penilaian', { pengajaran_id: currentPengajaran.id, nama_penilaian: 'PAS', tipe: 'PAS' })
+                      api.post('/penilaian', { pengajaran_id: currentPengajaran.id, nama_penilaian: 'PTS', tipe: 'PTS', kategori: 'Pengetahuan' }),
+                      api.post('/penilaian', { pengajaran_id: currentPengajaran.id, nama_penilaian: 'PAS', tipe: 'PAS', kategori: 'Pengetahuan' }),
+                      api.post('/penilaian', { pengajaran_id: currentPengajaran.id, nama_penilaian: 'Praktik 1', tipe: 'Harian', kategori: 'Keterampilan' })
                    ]);
                 }
-                
-                setSnackbar({ open: true, message: 'Data Pengajaran & Penilaian Awal berhasil diinisialisasi.', severity: 'success' });
+                setSnackbar({ open: true, message: 'Data Pengajaran diinisialisasi.', severity: 'success' });
             } else {
-                console.warn("Guru tidak terdeteksi, mode view-only");
+                console.warn("Guru tidak terdeteksi");
             }
         }
       } catch (err) {
           console.error("Gagal init pengajaran:", err);
       }
 
-      // --- LANGKAH 3: JIKA PENGAJARAN ADA, FETCH NILAI & BOBOT ---
       if (currentPengajaran) {
           const pId = currentPengajaran.id;
           setPengajaranId(pId);
@@ -247,16 +231,21 @@ const HalamanNilaiSiswa = () => {
             api.get('/nilai', { params: { pengajaran_id: pId, limit: 1000 } })
           ]);
 
-          // Penilaian (Kolom)
           if (resPenilaian.status === 'fulfilled') {
             const raw = resPenilaian.value.data?.data?.penilaian || resPenilaian.value.data?.data || [];
             setAssignments(Array.isArray(raw) ? raw : []);
           } else { setAssignments([]); }
 
-          // Bobot
           if (resBobot.status === 'fulfilled') {
             const raw = resBobot.value.data?.data?.konfigurasi_bobot || resBobot.value.data?.data;
             const bobotData = Array.isArray(raw) ? (raw[0] || {}) : (raw || {});
+            
+            if (bobotData.id) {
+                setBobotId(bobotData.id);
+            } else {
+                setBobotId(null);
+            }
+
             setBobot({
                 bobot_harian: bobotData.bobot_harian || 0,
                 bobot_pts: bobotData.bobot_pts || 0,
@@ -264,7 +253,6 @@ const HalamanNilaiSiswa = () => {
             });
           }
 
-          // Nilai (Cell)
           if (resNilai.status === 'fulfilled') {
             const raw = resNilai.value.data?.data?.nilai || [];
             setGrades(Array.isArray(raw) ? raw.map(g => ({
@@ -275,9 +263,8 @@ const HalamanNilaiSiswa = () => {
           } else { setGrades([]); }
 
       } else {
-          setAssignments([]);
-          setGrades([]);
-          setSnackbar({ open: true, message: 'Data siswa dimuat (Mode Baca - Pengajar belum diset).', severity: 'info' });
+          setAssignments([]); setGrades([]);
+          setSnackbar({ open: true, message: 'Data siswa dimuat (Mode Baca).', severity: 'info' });
       }
 
     } catch (error) {
@@ -297,20 +284,106 @@ const HalamanNilaiSiswa = () => {
     if (!pengajaranId) return;
 
     try {
-      await api.post('/konfigurasi-bobot', {
-        pengajaran_id: pengajaranId,
-        bobot_harian: bobot.bobot_harian,
-        bobot_pts: bobot.bobot_pts,
-        bobot_pas: bobot.bobot_pas
-      });
+      if (bobotId) {
+        await api.put(`/konfigurasi-bobot/${bobotId}`, {
+            bobot_harian: bobot.bobot_harian,
+            bobot_pts: bobot.bobot_pts,
+            bobot_pas: bobot.bobot_pas
+        });
+      } else {
+        const response = await api.post('/konfigurasi-bobot', {
+            pengajaran_id: pengajaranId,
+            bobot_harian: bobot.bobot_harian,
+            bobot_pts: bobot.bobot_pts,
+            bobot_pas: bobot.bobot_pas
+        });
+        if (response.data?.data?.id) {
+            setBobotId(response.data.data.id);
+        }
+      }
       setSnackbar({ open: true, message: `Bobot berhasil disimpan.`, severity: 'success' });
     } catch (error) {
       console.error("Error saving bobot:", error);
-      setSnackbar({ open: true, message: 'Gagal menyimpan bobot.', severity: 'error' });
+      const msg = error.response?.data?.message || 'Gagal menyimpan bobot.';
+      setSnackbar({ open: true, message: msg, severity: 'error' });
     }
   };
 
-  // === 4. TAMBAH PENILAIAN (KOLOM BARU) ===
+  // === 4. SIMPAN NILAI AKHIR KE RAPOR (FITUR BARU) ===
+  const handleSimpanKeRapor = async () => {
+    if (!pengajaranId || students.length === 0) {
+        setSnackbar({ open: true, message: 'Tidak ada data untuk disimpan.', severity: 'warning' });
+        return;
+    }
+    
+    setLoading(true);
+    try {
+        const dataToSave = students.map(s => {
+            // Logic Hitung Pengetahuan
+            const pAssigns = assignments.filter(a => (!a.kategori || a.kategori === 'Pengetahuan'));
+            const pIdsHarian = pAssigns.filter(a => a.tipe === 'Harian').map(a => a.id.toString());
+            const pIdPTS = pAssigns.find(a => a.tipe === 'PTS')?.id.toString();
+            const pIdPAS = pAssigns.find(a => a.tipe === 'PAS')?.id.toString();
+            
+            // Helper get value from state
+            const getVal = (aid) => {
+                // Pastikan tipe data sama saat find (String)
+                const g = grades.find(gr => String(gr.studentId) === String(s.id) && String(gr.assignmentId) === String(aid));
+                return g ? parseFloat(g.nilai) : 0;
+            };
+
+            const valsHarian = pIdsHarian.map(id => getVal(id));
+            const avgHarian = getAverage(valsHarian);
+            const valPTS = pIdPTS ? getVal(pIdPTS) : 0;
+            const valPAS = pIdPAS ? getVal(pIdPAS) : 0;
+
+            const nilaiP = (avgHarian * (bobot.bobot_harian || 0) / 100) + 
+                           (valPTS * (bobot.bobot_pts || 0) / 100) + 
+                           (valPAS * (bobot.bobot_pas || 0) / 100);
+
+            // Logic Hitung Keterampilan
+            const kAssigns = assignments.filter(a => a.kategori === 'Keterampilan');
+            const kIds = kAssigns.map(a => a.id.toString());
+            const kVals = kIds.map(id => getVal(id));
+            const nilaiK = getAverage(kVals);
+
+            return {
+                siswa_id: s.id,
+                nilai_pengetahuan: Math.round(nilaiP),
+                predikat_pengetahuan: getPredikat(Math.round(nilaiP)),
+                deskripsi_pengetahuan: getDeskripsi(getPredikat(Math.round(nilaiP)), 'Pengetahuan'),
+                nilai_keterampilan: Math.round(nilaiK),
+                predikat_keterampilan: getPredikat(Math.round(nilaiK)),
+                deskripsi_keterampilan: getDeskripsi(getPredikat(Math.round(nilaiK)), 'Keterampilan'),
+            };
+        });
+
+        // Kirim ke Backend (Endpoint Batch Update Nilai Rapor)
+        // Kita gunakan endpoint /nilai-rapor/batch jika sudah dibuat, atau loop manual
+        // Asumsi backend punya: POST /nilai-rapor/batch
+        await api.post('/rapor/batch', {
+            pengajaran_id: pengajaranId,
+            // Info konteks untuk membuat Rapor Induk jika belum ada
+            kelas_id: selectedKelas,
+            semester_id: selectedSemester,
+            mapel_id: selectedMapel,
+            data_nilai: dataToSave
+        });
+
+        setSnackbar({ open: true, message: 'Nilai Akhir berhasil dikirim ke Rapor!', severity: 'success' });
+
+    } catch (error) {
+        console.error("Error saving to rapor:", error);
+        // Tampilkan pesan detail jika ada
+        const msg = error.response?.data?.message || 'Gagal mengirim nilai ke Rapor.';
+        setSnackbar({ open: true, message: msg, severity: 'error' });
+    } finally {
+        setLoading(false);
+    }
+  };
+
+
+  // === 5. TAMBAH PENILAIAN ===
   const handleOpenAddDialog = () => setOpenAddDialog(true);
   const handleCloseAddDialog = () => setOpenAddDialog(false);
 
@@ -321,17 +394,18 @@ const HalamanNilaiSiswa = () => {
       const response = await api.post('/penilaian', {
         pengajaran_id: pengajaranId,
         nama_penilaian: newAssignmentName,
-        tipe: newAssignmentType // 'Harian', 'PTS', 'PAS'
+        tipe: newAssignmentType,
+        kategori: newAssignmentKategori 
       });
 
       const newAssign = response.data?.data; 
       if (newAssign) {
-          // Normalisasi data baru agar sesuai state assignments
           const mappedAssign = {
-              id: String(newAssign.id),
-              nama_penilaian: newAssign.nama_penilaian,
-              nama: newAssign.nama_penilaian, // Fallback
-              tipe: newAssign.tipe
+             id: String(newAssign.id),
+             nama_penilaian: newAssign.nama_penilaian,
+             nama: newAssign.nama_penilaian, 
+             tipe: newAssign.tipe,
+             kategori: newAssign.kategori
           };
           setAssignments((prev) => [...prev, mappedAssign]);
           setSnackbar({ open: true, message: `Kolom '${newAssignmentName}' ditambahkan.`, severity: 'success' });
@@ -346,7 +420,7 @@ const HalamanNilaiSiswa = () => {
     }
   };
 
-  // === 5. EDIT NILAI (CELL EDIT) ===
+  // === 6. EDIT NILAI ===
   const processRowUpdate = async (newRow, oldRow) => {
     for (const assign of assignments) {
       const fieldId = assign.id.toString(); 
@@ -360,7 +434,7 @@ const HalamanNilaiSiswa = () => {
         try {
           await api.post('/nilai', {
              siswa_id: newRow.id,
-             penilaian_id: assign.id, // ID dari tabel penilaian
+             penilaian_id: assign.id, 
              nilai: newValue
           });
 
@@ -388,123 +462,171 @@ const HalamanNilaiSiswa = () => {
 
   const handleProcessRowUpdateError = (error) => {
     console.error(error);
-    setSnackbar({ open: true, message: 'Gagal menyimpan nilai.', severity: 'error' });
   };
 
-  const handleCloseSnackbar = () => setSnackbar((prev) => ({ ...prev, open: false }));
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
 
-  // === DATAGRID COLUMNS SETUP ===
-  const columns = useMemo(() => {
-    // 1. Kolom Statis (Data Siswa)
-    const staticCols = [
-      { field: 'nis', headerName: 'NIS', width: 100 },
-      { 
-        field: 'nama', 
-        headerName: 'Nama Siswa', 
-        flex: 1, 
-        minWidth: 200,
-        valueGetter: (value, row) => {
-            const rowData = row || value?.row || value;
-            return rowData?.nama_lengkap || rowData?.nama || '-';
+  // === COLUMNS GENERATOR ===
+  const getColumns = (tab) => {
+      const staticCols = [
+        { field: 'nis', headerName: 'NIS', width: 100, frozen: true },
+        { 
+          field: 'nama', headerName: 'Nama Siswa', flex: 1, minWidth: 200, frozen: true,
+          valueGetter: (value, row) => {
+              const rowData = row || value?.row || value;
+              return rowData?.nama_lengkap || rowData?.nama || '-';
+          }
         }
+      ];
+
+      // --- TAB 0: NILAI HARIAN ---
+      if (tab === 0) {
+         const harianAssigns = assignments.filter(a => a.tipe === 'Harian');
+         const dynamicCols = harianAssigns.map((a) => ({
+            field: a.id.toString(),
+            headerName: `${a.nama_penilaian} (${a.kategori === 'Keterampilan' ? 'K' : 'P'})`,
+            width: 140,
+            type: 'number',
+            editable: true,
+            cellClassName: a.kategori === 'Keterampilan' ? 'keterampilan-cell' : 'daily-cell'
+         }));
+         return [...staticCols, ...dynamicCols];
       }
-    ];
 
-    if (!Array.isArray(assignments) || assignments.length === 0) {
-         return staticCols;
-    }
+      // --- TAB 1 & 2: PENGETAHUAN & KETERAMPILAN ---
+      const kategori = tab === 1 ? 'Pengetahuan' : 'Keterampilan';
+      
+      const relevantAssigns = assignments.filter(a => (!a.kategori || a.kategori === kategori));
 
-    // 2. Kolom Dinamis (Nilai)
-    const dynamicCols = assignments.map((a) => ({
-      field: a.id.toString(), 
-      headerName: `${a.nama_penilaian || a.nama} (${a.tipe})`,
-      width: 140,
-      type: 'number',
-      editable: true,
-      cellClassName: a.tipe === 'Harian' ? 'daily-cell' : 'exam-cell'
-    }));
+      const colRataHarian = {
+         field: `rataHarian_${kategori}`,
+         headerName: 'Rata-rata Harian',
+         width: 130,
+         type: 'number',
+         cellClassName: 'calculated-cell',
+         valueGetter: (value, row) => {
+             const r = row || value?.row;
+             if(!r) return 0;
+             const harianIds = relevantAssigns.filter(a => a.tipe === 'Harian').map(a => a.id.toString());
+             const vals = harianIds.map(id => r[id]);
+             return Math.round(getAverage(vals));
+         }
+      };
 
-    // 3. Kolom Kalkulasi
-    const calcCols = [
-      {
-        field: 'avgHarian',
-        headerName: 'Rata2 Harian',
-        width: 110,
-        valueGetter: (value, row) => {
-          const rowData = row || value?.row;
-          if (!rowData) return 0;
-          const ids = assignments.filter((a) => a.tipe === 'Harian').map((a) => a.id.toString());
-          const values = ids.map((id) => rowData[id]);
-          const avg = getAverage(values);
-          return Math.round(avg);
-        }
-      },
-      {
-        field: 'nilaiAkhir',
-        headerName: 'Nilai Akhir',
-        width: 110,
-        valueGetter: (value, row) => {
-          const rowData = row || value?.row;
-          if (!rowData) return 0;
-          
-          const harianIds = assignments.filter((a) => a.tipe === 'Harian').map((a) => a.id.toString());
-          const harianValues = harianIds.map((id) => rowData[id]);
-          const avgHarian = getAverage(harianValues);
+      const examCols = relevantAssigns.filter(a => a.tipe === 'PTS' || a.tipe === 'PAS').map(a => ({
+          field: a.id.toString(),
+          headerName: a.tipe,
+          width: 100,
+          type: 'number',
+          editable: true,
+          cellClassName: 'exam-cell'
+      }));
 
-          const ptsAssign = assignments.find((a) => a.tipe === 'PTS');
-          const pasAssign = assignments.find((a) => a.tipe === 'PAS');
-          
-          const ptsId = ptsAssign ? ptsAssign.id.toString() : null;
-          const pasId = pasAssign ? pasAssign.id.toString() : null;
+      const colNA = {
+          field: `na_${kategori}`,
+          headerName: 'Nilai Akhir',
+          width: 120,
+          type: 'number',
+          cellClassName: 'final-grade',
+          valueGetter: (value, row) => {
+             const r = row || value?.row;
+             if(!r) return 0;
+             
+             const harianIds = relevantAssigns.filter(a => a.tipe === 'Harian').map(a => a.id.toString());
+             const avgHarian = getAverage(harianIds.map(id => r[id]));
+             
+             if (kategori === 'Pengetahuan') {
+                 const ptsId = relevantAssigns.find(a => a.tipe === 'PTS')?.id.toString();
+                 const pasId = relevantAssigns.find(a => a.tipe === 'PAS')?.id.toString();
+                 const nPTS = ptsId ? (r[ptsId] || 0) : 0;
+                 const nPAS = pasId ? (r[pasId] || 0) : 0;
+                 const final = (avgHarian * (bobot.bobot_harian || 0) / 100) + 
+                               (nPTS * (bobot.bobot_pts || 0) / 100) + 
+                               (nPAS * (bobot.bobot_pas || 0) / 100);
+                 return Math.round(final);
+             } else {
+                 const allIds = relevantAssigns.map(a => a.id.toString());
+                 const allValues = allIds.map(id => r[id]);
+                 return Math.round(getAverage(allValues));
+             }
+          }
+      };
 
-          const nilaiPts = ptsId ? (rowData[ptsId] || 0) : 0;
-          const nilaiPas = pasId ? (rowData[pasId] || 0) : 0;
+      const colPredikat = {
+          field: `predikat_${kategori}`,
+          headerName: 'Predikat',
+          width: 90,
+          cellClassName: 'calculated-cell',
+          valueGetter: (value, row) => {
+             const r = row || value?.row;
+             if(!r) return '-';
+             let final = 0;
+             const harianIds = relevantAssigns.filter(a => a.tipe === 'Harian').map(a => a.id.toString());
+             const avgHarian = getAverage(harianIds.map(id => r[id]));
 
-          const final = (avgHarian * (bobot.bobot_harian || 0)) / 100 + 
-                        (nilaiPts * (bobot.bobot_pts || 0)) / 100 + 
-                        (nilaiPas * (bobot.bobot_pas || 0)) / 100;
-          return Math.round(final);
-        }
-      },
-      {
-        field: 'predikat',
-        headerName: 'Predikat',
-        width: 90,
-        valueGetter: (value, row) => {
-          const rowData = row || value?.row;
-          if (!rowData) return '-';
-          
-          const harianIds = assignments.filter((a) => a.tipe === 'Harian').map((a) => a.id.toString());
-          const harianValues = harianIds.map((id) => rowData[id]);
-          const avgHarian = getAverage(harianValues);
+             if (kategori === 'Pengetahuan') {
+                 const ptsId = relevantAssigns.find(a => a.tipe === 'PTS')?.id.toString();
+                 const pasId = relevantAssigns.find(a => a.tipe === 'PAS')?.id.toString();
+                 const nPTS = ptsId ? (r[ptsId] || 0) : 0;
+                 const nPAS = pasId ? (r[pasId] || 0) : 0;
+                 final = (avgHarian * (bobot.bobot_harian || 0) / 100) + (nPTS * (bobot.bobot_pts || 0) / 100) + (nPAS * (bobot.bobot_pas || 0) / 100);
+             } else {
+                 const allIds = relevantAssigns.map(a => a.id.toString());
+                 const allValues = allIds.map(id => r[id]);
+                 final = getAverage(allValues);
+             }
+             return getPredikat(Math.round(final));
+          },
+          renderCell: (params) => (
+             <Chip label={params.value} size="small" color={params.value === 'A' || params.value === 'B' ? 'success' : 'warning'} />
+        )
+      };
 
-          const ptsAssign = assignments.find((a) => a.tipe === 'PTS');
-          const pasAssign = assignments.find((a) => a.tipe === 'PAS');
-          const ptsId = ptsAssign ? ptsAssign.id.toString() : null;
-          const pasId = pasAssign ? pasAssign.id.toString() : null;
+      const colDeskripsi = {
+          field: `deskripsi_${kategori}`,
+          headerName: 'Deskripsi',
+          flex: 1,
+          minWidth: 200,
+          valueGetter: (value, row) => {
+             const r = row || value?.row;
+             if(!r) return '-';
+             let final = 0;
+             const harianIds = relevantAssigns.filter(a => a.tipe === 'Harian').map(a => a.id.toString());
+             const avgHarian = getAverage(harianIds.map(id => r[id]));
 
-          const nilaiPts = ptsId ? (rowData[ptsId] || 0) : 0;
-          const nilaiPas = pasId ? (rowData[pasId] || 0) : 0;
+             if (kategori === 'Pengetahuan') {
+                 const ptsId = relevantAssigns.find(a => a.tipe === 'PTS')?.id.toString();
+                 const pasId = relevantAssigns.find(a => a.tipe === 'PAS')?.id.toString();
+                 const nPTS = ptsId ? (r[ptsId] || 0) : 0;
+                 const nPAS = pasId ? (r[pasId] || 0) : 0;
+                 final = (avgHarian * (bobot.bobot_harian || 0) / 100) + (nPTS * (bobot.bobot_pts || 0) / 100) + (nPAS * (bobot.bobot_pas || 0) / 100);
+             } else {
+                 const allIds = relevantAssigns.map(a => a.id.toString());
+                 const allValues = allIds.map(id => r[id]);
+                 final = getAverage(allValues);
+             }
+             const pred = getPredikat(Math.round(final));
+             return getDeskripsi(pred, kategori);
+          }
+      };
 
-          const final = (avgHarian * (bobot.bobot_harian || 0)) / 100 + 
-                        (nilaiPts * (bobot.bobot_pts || 0)) / 100 + 
-                        (nilaiPas * (bobot.bobot_pas || 0)) / 100;
-          
-          return getPredikat(final);
-        }
+      if (kategori === 'Keterampilan') {
+          return [...staticCols, colNA, colPredikat, colDeskripsi];
       }
-    ];
 
-    return [...staticCols, ...dynamicCols, ...calcCols];
-  }, [assignments, bobot, students]); 
+      return [...staticCols, colRataHarian, ...examCols, colNA, colPredikat, colDeskripsi];
+  };
 
-  // Mapping Rows
+  const columns = useMemo(() => getColumns(tabValue), [assignments, bobot, students, tabValue]);
+
   const rows = useMemo(() => {
     if (!Array.isArray(students)) return [];
     
     return students.map((s) => {
       const row = { id: s.id, nis: s.nis, nama: s.nama || s.nama_lengkap };
-      
       if (Array.isArray(assignments)) {
         assignments.forEach((a) => {
           const g = grades.find((gr) => String(gr.studentId) === String(s.id) && String(gr.assignmentId) === String(a.id));
@@ -519,23 +641,18 @@ const HalamanNilaiSiswa = () => {
   return (
     <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 3 } }}>
       
-      {/* HEADER & FILTER */}
+      {/* FILTER CARD */}
       <Card sx={{ mb: 1, p: 2 }}>
         <Grid container spacing={2} alignItems="center">
-          
-          {/* FILTER SEMESTER & TAHUN */}
-          <Grid item size={{ xs: 5, sm: 4, md: 2.5 }}>
+          <Grid item xs={6} sm={3}>
             <FormControl fullWidth size="small">
               <InputLabel>Tahun Ajaran</InputLabel>
               <Select value={selectedTahun} onChange={(e) => setSelectedTahun(e.target.value)} label="Tahun Ajaran">
-                 {tahunOptions.map(t => (
-                    <MenuItem key={t.id} value={t.tahun}>{t.tahun}</MenuItem>
-                 ))}
+                 {tahunOptions.map(t => <MenuItem key={t.id} value={t.tahun}>{t.tahun}</MenuItem>)}
               </Select>
             </FormControl>
           </Grid>
-
-          <Grid item size={{ xs: 4, sm: 4, md: 2 }}>
+          <Grid item xs={6} sm={3}>
             <FormControl fullWidth size="small">
               <InputLabel>Semester</InputLabel>
               <Select value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value)} label="Semester">
@@ -543,10 +660,7 @@ const HalamanNilaiSiswa = () => {
               </Select>
             </FormControl>
           </Grid>
-
-          {/* FILTER KELAS */}
-          <Grid item size={{ xs: 3, sm: 4, md: 2 }}>
-            {/* TAMPILKAN TEXT FIELD JIKA GURU & WALI KELAS */}
+          <Grid item xs={12} sm={3}>
             {currentUser?.role === 'Guru' && kelasOptions.length === 1 ? (
                 <TextField
                     label="Kelas Perwalian"
@@ -554,38 +668,26 @@ const HalamanNilaiSiswa = () => {
                     fullWidth
                     value={kelasOptions[0].nama_kelas}
                     InputProps={{ readOnly: true }}
-                    sx={{ '& .MuiInputBase-input': { fontWeight: 'bold', color: 'primary.main' } }}
                 />
             ) : (
                 <FormControl fullWidth size="small">
-                    <InputLabel>Kelas</InputLabel>
+                    <InputLabel>Pilih Kelas</InputLabel>
                     <Select value={selectedKelas} label="Pilih Kelas" onChange={(e) => setSelectedKelas(e.target.value)}>
-                        {kelasOptions.map((k) => (
-                            <MenuItem key={k.id} value={k.id}>
-                                {k.nama_kelas}
-                            </MenuItem>
-                        ))}
+                        {kelasOptions.map((k) => <MenuItem key={k.id} value={k.id}>{k.nama_kelas}</MenuItem>)}
                     </Select>
                 </FormControl>
             )}
           </Grid>
-
-          {/* FILTER MAPEL */}
-          <Grid item size={{ xs: 7, sm: 6, md: 3 }}>
+          <Grid item xs={12} sm={3}>
             <FormControl fullWidth size="small">
               <InputLabel>Mata Pelajaran</InputLabel>
               <Select value={selectedMapel} onChange={(e) => setSelectedMapel(e.target.value)} label="Mata Pelajaran">
-                {mapelOptions.map((m) => (
-                    <MenuItem key={m.id} value={m.id}>
-                        {m.nama_mapel}
-                    </MenuItem>
-                ))}
+                {mapelOptions.map((m) => <MenuItem key={m.id} value={m.id}>{m.nama_mapel}</MenuItem>)}
               </Select>
             </FormControl>
           </Grid>
-          
-          <Grid item size={{ xs: 5, sm: 6, md: 2.5 }}>
-            <Button fullWidth variant="contained" startIcon={<PageviewIcon />} onClick={handleTampilkan} disabled={loading}>
+          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button variant="contained" startIcon={<PageviewIcon />} onClick={handleTampilkan} disabled={loading}>
               {loading ? '...' : 'Tampilkan'}
             </Button>
           </Grid>
@@ -593,59 +695,72 @@ const HalamanNilaiSiswa = () => {
       </Card>
 
       {/* KONTEN UTAMA */}
-      {/* Selalu render tabel jika sudah ada pengajaranId, meski students kosong */}
       {pengajaranId && (
         <Fade in>
           <Box>
-            {/* CONFIG BOBOT */}
-            <Card sx={{ mb: 1, p: { xs: 1.5, sm: 1.5, md: 2 } }}>
-              <Typography variant="h6" gutterBottom>
-                Konfigurasi Bobot Nilai
-              </Typography>
-              <Grid container spacing={{ xs: 1.5, sm: 2 }} alignItems="center">
-                {['harian', 'pts', 'pas'].map((key) => (
-                  <Grid item size={{ xs: 4, sm: 3, md: 2 }} key={key}>
-                    <TextField
-                      label={`Bobot ${key.toUpperCase()}`}
-                      type="number"
-                      size="small"
-                      fullWidth
-                      value={bobot[`bobot_${key}`]} 
-                      onChange={(e) => setBobot(b => ({ ...b, [`bobot_${key}`]: parseFloat(e.target.value) || 0 }))}
-                      InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
-                    />
-                  </Grid>
-                ))}
-                <Grid item size={{ xs: 6, sm: 3, md: 2 }}>
-                  <Button fullWidth variant="contained" startIcon={<SaveIcon />} onClick={handleSimpanBobot} disabled={bobotError}>
-                    Simpan
-                  </Button>
-                </Grid>
-                <Grid item size={{ xs: 6, sm: 6, md: 4 }}>
-                  <Typography color={bobotError ? 'error' : 'success'}>
-                    Total: {totalBobot}% {bobotError && '(harus 100%)'}
-                  </Typography>
-                </Grid>
-              </Grid>
+            {/* TABS */}
+            <Card sx={{ mb: 2 }}>
+                <Tabs value={tabValue} onChange={(e, val) => setTabValue(val)} indicatorColor="primary" textColor="primary" variant="fullWidth">
+                    <Tab icon={<AssignmentIcon />} label="Nilai Harian" iconPosition="start" />
+                    <Tab icon={<AssessmentIcon />} label="Pengetahuan (KI-3)" iconPosition="start" />
+                    <Tab icon={<SchoolIcon />} label="Keterampilan (KI-4)" iconPosition="start" />
+                </Tabs>
             </Card>
 
-            {/* TABEL */}
-            <Card>
-              <Box sx={{ p: { xs: 1.5, sm: 1.5, md: 2 }, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="h6">Buku Nilai Siswa</Typography>
-                <Button variant="outlined" startIcon={<AddIcon />} onClick={handleOpenAddDialog}>
-                  Tambah Kolom Nilai
-                </Button>
-              </Box>
-              
-              {/* PESAN JIKA BELUM ADA KOLOM */}
-              {Array.isArray(assignments) && assignments.length === 0 && (
-                <Alert severity="info" sx={{ m: 2 }}>
-                  Belum ada kolom penilaian untuk mata pelajaran ini. Silakan klik "Tambah Kolom Nilai" (misal: Tugas 1, UH 1) untuk mulai menginput nilai.
-                </Alert>
-              )}
+            {/* CONFIG BOBOT (Hanya di Tab Pengetahuan) */}
+            {tabValue === 1 && (
+                <Card sx={{ mb: 1, p: 2 }}>
+                    <Typography variant="subtitle2" gutterBottom fontWeight="bold">
+                        Konfigurasi Bobot (Pengetahuan)
+                    </Typography>
+                    <Grid container spacing={2} alignItems="center">
+                        <Grid item xs={2}>
+                            <TextField label="Harian %" type="number" size="small" fullWidth value={bobot.bobot_harian} onChange={(e) => setBobot({...bobot, bobot_harian: e.target.value})} />
+                        </Grid>
+                        <Grid item xs={2}>
+                            <TextField label="PTS %" type="number" size="small" fullWidth value={bobot.bobot_pts} onChange={(e) => setBobot({...bobot, bobot_pts: e.target.value})} />
+                        </Grid>
+                        <Grid item xs={2}>
+                            <TextField label="PAS %" type="number" size="small" fullWidth value={bobot.bobot_pas} onChange={(e) => setBobot({...bobot, bobot_pas: e.target.value})} />
+                        </Grid>
+                        <Grid item xs={2}>
+                             <Button variant="contained" size="small" onClick={handleSimpanBobot} disabled={bobotError}>Simpan</Button>
+                        </Grid>
+                        <Grid item xs={4}>
+                             <Typography color={bobotError ? 'error' : 'success'} variant="caption">Total: {totalBobot}% {bobotError && '(Wajib 100%)'}</Typography>
+                        </Grid>
+                    </Grid>
+                </Card>
+            )}
 
-              <Box sx={{ p: { xs: 1.5, sm: 1.5, md: 2 } }}>
+            {/* TABEL DATA */}
+            <Card>
+              <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between' }}>
+                <Typography variant="h6">
+                    {tabValue === 0 ? 'Input Nilai Harian' : (tabValue === 1 ? 'Rekap Pengetahuan' : 'Rekap Keterampilan')}
+                </Typography>
+                <Box>
+                    {/* Tombol Simpan ke Rapor (Baru) */}
+                    <Button 
+                        variant="contained" 
+                        color="success" 
+                        startIcon={<UploadIcon />} 
+                        onClick={handleSimpanKeRapor} 
+                        sx={{ mr: 2 }}
+                    >
+                        Simpan ke Rapor
+                    </Button>
+
+                    {/* Tombol Tambah hanya di Tab Harian */}
+                    {tabValue === 0 && (
+                        <Button variant="outlined" startIcon={<AddIcon />} onClick={() => setOpenAddDialog(true)}>
+                        Tambah Penilaian
+                        </Button>
+                    )}
+                </Box>
+              </Box>
+
+              <Box sx={{ p: 2 }}>
                 <DataGrid
                   rows={rows}
                   columns={columns}
@@ -653,13 +768,15 @@ const HalamanNilaiSiswa = () => {
                   autoHeight
                   disableRowSelectionOnClick
                   processRowUpdate={processRowUpdate}
-                  onProcessRowUpdateError={handleProcessRowUpdateError}
+                  onProcessRowUpdateError={(error) => console.error(error)}
+                  sx={{
+                    '& .MuiDataGrid-columnHeaders': { bgcolor: '#f5f5f5', fontWeight: 'bold' },
+                    '& .calculated-cell': { bgcolor: '#fafafa' },
+                    '& .final-grade': { bgcolor: '#e3f2fd', fontWeight: 'bold' },
+                    '& .keterampilan-cell': { bgcolor: '#fff3e0' },
+                  }}
                   components={{
-                    NoRowsOverlay: () => (
-                        <Stack height="100%" alignItems="center" justifyContent="center">
-                            Tidak ada siswa di kelas ini.
-                        </Stack>
-                    )
+                    NoRowsOverlay: () => <Stack height="100%" alignItems="center" justifyContent="center">Tidak ada data</Stack>
                   }}
                 />
               </Box>
@@ -669,18 +786,22 @@ const HalamanNilaiSiswa = () => {
       )}
 
       {/* DIALOG TAMBAH PENILAIAN */}
-      <Dialog open={openAddDialog} onClose={handleCloseAddDialog} fullWidth maxWidth="xs">
+      <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)} fullWidth maxWidth="xs">
         <DialogTitle>Tambah Kolom Nilai</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-                fullWidth label="Nama Penilaian (cth: Tugas 1)"
-                value={newAssignmentName} onChange={(e) => setNewAssignmentName(e.target.value)}
-            />
+            <TextField fullWidth label="Nama Penilaian" value={newAssignmentName} onChange={(e) => setNewAssignmentName(e.target.value)} />
+            <FormControl fullWidth>
+                <InputLabel>Aspek</InputLabel>
+                <Select value={newAssignmentKategori} label="Aspek" onChange={(e) => setNewAssignmentKategori(e.target.value)}>
+                    <MenuItem value="Pengetahuan">Pengetahuan (KI-3)</MenuItem>
+                    <MenuItem value="Keterampilan">Keterampilan (KI-4)</MenuItem>
+                </Select>
+            </FormControl>
             <FormControl fullWidth>
                 <InputLabel>Tipe</InputLabel>
                 <Select value={newAssignmentType} label="Tipe" onChange={(e) => setNewAssignmentType(e.target.value)}>
-                    <MenuItem value="Harian">Harian (Tugas/UH)</MenuItem>
+                    <MenuItem value="Harian">Harian</MenuItem>
                     <MenuItem value="PTS">PTS</MenuItem>
                     <MenuItem value="PAS">PAS</MenuItem>
                 </Select>
@@ -688,8 +809,8 @@ const HalamanNilaiSiswa = () => {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddDialog}>Batal</Button>
-          <Button onClick={handleSaveNewAssignment} disabled={!newAssignmentName.trim()} variant="contained">Simpan</Button>
+          <Button onClick={() => setOpenAddDialog(false)}>Batal</Button>
+          <Button onClick={handleSaveNewAssignment} variant="contained">Simpan</Button>
         </DialogActions>
       </Dialog>
 

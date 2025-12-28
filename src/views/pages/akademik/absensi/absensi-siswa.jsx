@@ -43,6 +43,8 @@ const HalamanAbsensiHarian = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isGuru, setIsGuru] = useState(false);
+  
+  // Info Wali Kelas (Hanya untuk Guru)
   const [myWaliKelasInfo, setMyWaliKelasInfo] = useState(null);
 
   useEffect(() => {
@@ -74,31 +76,68 @@ const HalamanAbsensiHarian = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
 
-  // === 2. FETCH DATA KELAS & DETEKSI WALI KELAS ===
+  // === 0. FETCH SEMESTER AKTIF ===
+  useEffect(() => {
+    const fetchSemester = async () => {
+      try {
+        const response = await api.get('/semester/active');
+        if (response.data?.data?.id) {
+          setSelectedSemester(response.data.data.id);
+        }
+      } catch (error) {
+        // Silent error, default 1 used
+      }
+    };
+    fetchSemester();
+  }, []);
+
+
+  // === 2. FETCH DATA KELAS & DETEKSI WALI KELAS (PERBAIKAN UTAMA) ===
   const fetchKelasAndInit = async () => {
     try {
-      const response = await api.get('/kelas');
-      const data = response.data?.data?.kelas || response.data?.data || [];
-      const classesList = Array.isArray(data) ? data : [];
-      
+      // Fetch Kelas DAN Pegawai (untuk mencocokkan user_id)
+      const [resKelas, resPegawai] = await Promise.all([
+        api.get('/kelas'),
+        api.get('/pegawai')
+      ]);
+
+      const dataKelas = resKelas.data?.data?.kelas || resKelas.data?.data || [];
+      const classesList = Array.isArray(dataKelas) ? dataKelas : [];
       setKelasOptions(classesList);
 
+      const dataPegawai = resPegawai.data?.data?.pegawai || resPegawai.data?.data || [];
+      const pegawaiList = Array.isArray(dataPegawai) ? dataPegawai : [];
+
       // JIKA GURU: Cari kelas yang dia ampu
-      if (isGuru && currentUser?.pegawai) {
-        const myPegawaiId = currentUser.pegawai.id;
-        
-        // Cari kelas dimana wali_kelas_id == myPegawaiId
-        const myClass = classesList.find(c => c.wali_kelas_id === myPegawaiId);
-        
-        if (myClass) {
-          setMyWaliKelasInfo({ id: myClass.id, nama: myClass.nama_kelas });
-          setSelectedKelas(myClass.id); // Otomatis pilih kelasnya
+      if (isGuru && currentUser) {
+        let myPegawaiId = currentUser.pegawai?.id; // Cek jika ada di localstorage
+
+        // Fallback: Jika di localstorage tidak ada info pegawai, cari manual via user_id
+        if (!myPegawaiId) {
+             const myProfile = pegawaiList.find(p => String(p.user_id) === String(currentUser.id));
+             if (myProfile) {
+                 myPegawaiId = myProfile.id;
+             }
+        }
+
+        if (myPegawaiId) {
+          // Cari kelas dimana wali_kelas_id == myPegawaiId
+          const myClass = classesList.find(c => String(c.wali_kelas_id) === String(myPegawaiId));
+          
+          if (myClass) {
+            setMyWaliKelasInfo({ id: myClass.id, nama: myClass.nama_kelas });
+            setSelectedKelas(myClass.id); // Otomatis pilih kelasnya
+          } else {
+             console.warn("User adalah Guru (ID: " + myPegawaiId + ") tapi tidak ditemukan sebagai Wali Kelas di data Kelas.");
+          }
+        } else {
+             console.warn("User ID " + currentUser.id + " tidak terhubung dengan data Pegawai manapun.");
         }
       }
 
     } catch (error) {
-      console.error("Error fetching kelas:", error);
-      setSnackbar({ open: true, message: 'Gagal memuat daftar kelas.', severity: 'error' });
+      console.error("Error fetching init data:", error);
+      setSnackbar({ open: true, message: 'Gagal memuat data inisialisasi.', severity: 'error' });
     }
   };
 
@@ -193,6 +232,11 @@ const HalamanAbsensiHarian = () => {
   };
 
   const handleSimpanAbsensi = async () => {
+    if (!selectedSemester) {
+         setSnackbar({ open: true, message: 'Semester aktif belum diset. Hubungi Admin.', severity: 'warning' });
+         return;
+    }
+
     setLoading(true);
     try {
         const promises = rows.map(async (siswa) => {
@@ -284,7 +328,7 @@ const HalamanAbsensiHarian = () => {
         <Grid container spacing={2} alignItems="center">
           
           {/* Pilih Tanggal */}
-          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
+          <Grid item size={{ xs: 6, sm: 6, md: 3 }}>
             <TextField
               label="Tanggal"
               type="date"
@@ -299,7 +343,7 @@ const HalamanAbsensiHarian = () => {
           {/* Bagian Pilih Kelas (Beda tampilan Admin vs Guru) */}
           {isAdmin ? (
             // --- TAMPILAN ADMIN: Dropdown ---
-            <Grid size={{ xs: 6, sm: 6, md: 3 }} spacing={2}>
+            <Grid item size={{ xs: 6, sm: 6, md: 3 }} spacing={2}>
               <FormControl fullWidth size="small">
                 <InputLabel>Pilih Kelas</InputLabel>
                 <Select 
@@ -317,7 +361,7 @@ const HalamanAbsensiHarian = () => {
             </Grid>
           ) : (
             // --- TAMPILAN GURU: Read Only Field ---
-            <Grid size={{ xs: 6, sm: 6, md: 3 }}>
+            <Grid item size={{ xs: 12, sm: 6, md: 3 }}>
               {myWaliKelasInfo ? (
                 <TextField
                   label="Kelas Perwalian"
@@ -337,7 +381,7 @@ const HalamanAbsensiHarian = () => {
           
           {/* Tombol Tampilkan (Hanya Admin yang butuh klik manual) */}
           {isAdmin && (
-            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+            <Grid item size={{ xs: 12, sm: 12, md: 2 }}>
               <Button fullWidth variant="contained" startIcon={<PageviewIcon />} onClick={handleTampilkan}>
                 Tampilkan
               </Button>
