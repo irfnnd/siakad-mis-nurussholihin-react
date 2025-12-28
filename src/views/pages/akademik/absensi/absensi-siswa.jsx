@@ -284,7 +284,7 @@ const HalamanAbsensiHarian = () => {
         <Grid container spacing={2} alignItems="center">
           
           {/* Pilih Tanggal */}
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
             <TextField
               label="Tanggal"
               type="date"
@@ -299,7 +299,7 @@ const HalamanAbsensiHarian = () => {
           {/* Bagian Pilih Kelas (Beda tampilan Admin vs Guru) */}
           {isAdmin ? (
             // --- TAMPILAN ADMIN: Dropdown ---
-            <Grid size={{ xs: 12, sm: 6, md: 3 }} spacing={2}>
+            <Grid size={{ xs: 6, sm: 6, md: 3 }} spacing={2}>
               <FormControl fullWidth size="small">
                 <InputLabel>Pilih Kelas</InputLabel>
                 <Select 
@@ -317,7 +317,7 @@ const HalamanAbsensiHarian = () => {
             </Grid>
           ) : (
             // --- TAMPILAN GURU: Read Only Field ---
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 6, sm: 6, md: 3 }}>
               {myWaliKelasInfo ? (
                 <TextField
                   label="Kelas Perwalian"
@@ -337,7 +337,7 @@ const HalamanAbsensiHarian = () => {
           
           {/* Tombol Tampilkan (Hanya Admin yang butuh klik manual) */}
           {isAdmin && (
-            <Grid size={{ xs: 12, sm: 12, md: 2 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
               <Button fullWidth variant="contained" startIcon={<PageviewIcon />} onClick={handleTampilkan}>
                 Tampilkan
               </Button>
