@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import api from '../../../services/api'; // Gunakan instance api kita
+// Sesuaikan path import ini dengan struktur folder Anda yang sebenarnya
+import api from '../../../services/api'; 
 
 import {
   Box,
@@ -56,7 +57,6 @@ const HalamanManajemenPengguna = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   // Form defaults
-  // Kita flatten state form agar mudah di-binding ke TextField
   const formDefaults = {
     username: '',
     email: '',
@@ -86,7 +86,7 @@ const HalamanManajemenPengguna = () => {
       const response = await api.get('/users', { params });
 
       // Sesuai controller: res.json({ data: { users: [...] } })
-      const rawData = response.data?.data?.users || [];
+      const rawData = response.data?.data?.users || response.data?.data || [];
 
       // Mapping data untuk DataGrid
       const mappedUsers = rawData.map((u) => ({
@@ -110,11 +110,13 @@ const HalamanManajemenPengguna = () => {
     }
   };
 
+  // Efek untuk memanggil API saat debounce search atau role berubah
   useEffect(() => {
     fetchUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch, filters.role]);
 
+  // Efek Debounce untuk search input
   useEffect(() => {
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     searchTimeoutRef.current = setTimeout(() => {
@@ -284,15 +286,20 @@ const HalamanManajemenPengguna = () => {
     setFormValues((prev) => ({ ...prev, [field]: e.target.value }));
   };
 
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   // --- KOLOM TABEL ---
   const columns = [
     { field: 'nama', headerName: 'Nama Lengkap', flex: 1, minWidth: 200 },
-    { field: 'username', headerName: 'Username', width: 120 },
+    { field: 'username', headerName: 'Username', width: 150 },
     { field: 'email', headerName: 'Email', flex: 1, minWidth: 200 },
     {
       field: 'role',
       headerName: 'Role',
-      width: 100,
+      width: 120,
       renderCell: (params) => {
         let color = 'default';
         if (params.value === 'Admin') color = 'error';
@@ -303,7 +310,7 @@ const HalamanManajemenPengguna = () => {
     {
       field: 'status',
       headerName: 'Status',
-      width: 100,
+      width: 120,
       renderCell: (params) => {
         const color = params.value === 'Aktif' ? 'success' : 'error';
         return <Chip label={params.value} color={color} size="small" />;
@@ -313,12 +320,18 @@ const HalamanManajemenPengguna = () => {
       field: 'actions',
       type: 'actions',
       headerName: 'Aksi',
-      width: 100,
+      width: 120,
       cellClassName: 'actions',
       getActions: ({ row }) => {
         const isAktif = row.status === 'Aktif';
         return [
-          <GridActionsCellItem key="edit" icon={<EditIcon />} label="Edit" onClick={() => handleClickEdit(row)} color="primary" />,
+          <GridActionsCellItem
+            key="edit"
+            icon={<EditIcon />}
+            label="Edit"
+            onClick={() => handleClickEdit(row)}
+            color="primary"
+          />,
           <GridActionsCellItem
             key="toggle"
             icon={isAktif ? <ToggleOffIcon /> : <ToggleOnIcon />}
@@ -327,39 +340,32 @@ const HalamanManajemenPengguna = () => {
             color={isAktif ? 'error' : 'success'}
           />
         ];
-      }
-    }
+      },
+    },
   ];
 
-  const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') return;
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   return (
-    <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 2 } }}>
+    <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: { xs: 1, sm: 2, md: 3 } }}>
+
       {/* FILTER & ACTION CARD */}
-      <Card sx={{ mb: { xs: 1, sm: 1.5, md: 2 }, p: 2 }}>
+      <Card sx={{ mb: { xs: 1, sm: 1.5, md: 3 }, p: 2 }}>
         <Grid container spacing={2} justifyContent="space-between" alignItems="center">
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid item size={{ xs: 12, md: 6 }}>
+            {/* PERBAIKAN DI SINI: Gunakan filters.searchTerm */}
             <TextField
               fullWidth
               size="small"
               name="searchTerm"
               placeholder="Cari nama / username / email..."
-              value={filters.searchTerm}
+              value={filters.searchTerm} 
               onChange={handleFilterChange}
               InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                )
+                startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>),
               }}
             />
           </Grid>
 
-          <Grid size={{ xs: 6, md: 3 }}>
+          <Grid item size={{ xs: 6, md: 3 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Filter Role</InputLabel>
               <Select name="role" value={filters.role} label="Filter Role" onChange={handleFilterChange}>
@@ -370,7 +376,7 @@ const HalamanManajemenPengguna = () => {
             </FormControl>
           </Grid>
 
-          <Grid size={{ xs: 6, md: 3 }}>
+          <Grid item size={{ xs: 6, md: 3 }}>
             <Button fullWidth variant="contained" startIcon={<AddIcon />} onClick={handleClickAdd}>
               Tambah
             </Button>
@@ -409,27 +415,26 @@ const HalamanManajemenPengguna = () => {
         <Box component="form" onSubmit={handleFormSubmit}>
           <DialogContent sx={{ pt: 3 }}>
             <Grid container spacing={2}>
+              
               {/* --- BAGIAN 1: INFORMASI AKUN (Wajib Semua Role) --- */}
-              <Grid size={{ xs: 12 }}>
-                <Typography variant="subtitle2" color="primary" sx={{ mb: 1, fontWeight: 'bold' }}>
-                  INFORMASI AKUN
-                </Typography>
+              <Grid item xs={12}>
+                <Typography variant="subtitle2" color="primary" sx={{ mb: 1, fontWeight: 'bold' }}>INFORMASI AKUN</Typography>
                 <Divider sx={{ mb: 2 }} />
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid item size={{ xs: 12, sm: 6 }}>
                 <TextField
                   name="username"
                   label="Username"
                   fullWidth
                   required
-                  disabled={isEditMode}
+                  disabled={isEditMode} 
                   value={formValues.username}
                   onChange={handleFormValueChange('username')}
                 />
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid item size={{ xs: 12, sm: 6 }}>
                 <TextField
                   name="email"
                   label="Email"
@@ -441,11 +446,15 @@ const HalamanManajemenPengguna = () => {
                 />
               </Grid>
 
-              {/* Input Role Wajib Ada */}
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid item size={{ xs: 12, sm: 6 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Role</InputLabel>
-                  <Select name="role" label="Role" value={formValues.role} onChange={handleFormValueChange('role')}>
+                  <Select
+                    name="role"
+                    label="Role"
+                    value={formValues.role}
+                    onChange={handleFormValueChange('role')}
+                  >
                     <MenuItem value="Admin">Admin</MenuItem>
                     <MenuItem value="Guru">Guru</MenuItem>
                   </Select>
@@ -453,7 +462,7 @@ const HalamanManajemenPengguna = () => {
               </Grid>
 
               {isEditMode && (
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid item size={{ xs: 12, sm: 6 }}>
                   <FormControl fullWidth required>
                     <InputLabel>Status Akun</InputLabel>
                     <Select name="status" label="Status Akun" value={formValues.status} onChange={handleFormValueChange('status')}>
@@ -467,92 +476,90 @@ const HalamanManajemenPengguna = () => {
               {/* --- BAGIAN 2: DATA PEGAWAI (Hanya Jika Role = Guru) --- */}
               {formValues.role === 'Guru' && (
                 <>
-                  <Grid size={{ xs: 12 }} sx={{ mt: 2 }}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <SchoolIcon color="primary" fontSize="small" />
-                      <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 'bold' }}>
-                        DATA PEGAWAI (GURU)
-                      </Typography>
-                    </Box>
-                    <Divider sx={{ my: 1 }} />
-                  </Grid>
-
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                      name="nama_lengkap"
-                      label="Nama Lengkap"
-                      fullWidth
-                      required
-                      value={formValues.nama_lengkap}
-                      onChange={handleFormValueChange('nama_lengkap')}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                      name="nip"
-                      label="NIP (Nomor Induk Pegawai)"
-                      fullWidth
-                      required
-                      value={formValues.nip}
-                      onChange={handleFormValueChange('nip')}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                      name="jabatan"
-                      label="Jabatan"
-                      fullWidth
-                      required
-                      value={formValues.jabatan}
-                      onChange={handleFormValueChange('jabatan')}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <FormControl fullWidth>
-                      <InputLabel>Jenis Kelamin</InputLabel>
-                      <Select
-                        name="jenis_kelamin"
-                        label="Jenis Kelamin"
-                        value={formValues.jenis_kelamin}
-                        onChange={handleFormValueChange('jenis_kelamin')}
-                      >
-                        <MenuItem value="Laki-laki">Laki-laki</MenuItem>
-                        <MenuItem value="Perempuan">Perempuan</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                      name="telepon"
-                      label="No. Telepon"
-                      fullWidth
-                      value={formValues.telepon}
-                      onChange={handleFormValueChange('telepon')}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <TextField
-                      name="alamat"
-                      label="Alamat"
-                      fullWidth
-                      multiline
-                      rows={2}
-                      value={formValues.alamat}
-                      onChange={handleFormValueChange('alamat')}
-                    />
-                  </Grid>
+                    <Grid item xs={12} sx={{ mt: 2 }}>
+                        <Box display="flex" alignItems="center" gap={1}>
+                             <SchoolIcon color="primary" fontSize="small" />
+                             <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 'bold' }}>DATA PEGAWAI (GURU)</Typography>
+                        </Box>
+                        <Divider sx={{ my: 1 }} />
+                    </Grid>
+                    
+                    <Grid item size={{ xs: 12, sm: 6 }}>
+                        <TextField
+                            name="nama_lengkap"
+                            label="Nama Lengkap"
+                            fullWidth
+                            required
+                            value={formValues.nama_lengkap}
+                            onChange={handleFormValueChange('nama_lengkap')}
+                        />
+                    </Grid>
+                    <Grid item size={{ xs: 12, sm: 6 }}>
+                        <TextField
+                            name="nip"
+                            label="NIP (Nomor Induk Pegawai)"
+                            fullWidth
+                            required
+                            value={formValues.nip}
+                            onChange={handleFormValueChange('nip')}
+                        />
+                    </Grid>
+                    <Grid item size={{ xs: 12, sm: 6 }}>
+                        <TextField
+                            name="jabatan"
+                            label="Jabatan"
+                            fullWidth
+                            required
+                            value={formValues.jabatan}
+                            onChange={handleFormValueChange('jabatan')}
+                        />
+                    </Grid>
+                    <Grid item size={{ xs: 12, sm: 6 }}>
+                        <FormControl fullWidth>
+                            <InputLabel>Jenis Kelamin</InputLabel>
+                            <Select
+                                name="jenis_kelamin"
+                                label="Jenis Kelamin"
+                                value={formValues.jenis_kelamin}
+                                onChange={handleFormValueChange('jenis_kelamin')}
+                            >
+                                <MenuItem value="Laki-laki">Laki-laki</MenuItem>
+                                <MenuItem value="Perempuan">Perempuan</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    <Grid item size={{ xs: 12, sm: 6 }}>
+                        <TextField
+                            name="telepon"
+                            label="No. Telepon"
+                            fullWidth
+                            value={formValues.telepon}
+                            onChange={handleFormValueChange('telepon')}
+                        />
+                    </Grid>
+                    <Grid item size={{ xs: 12 }}>
+                        <TextField
+                            name="alamat"
+                            label="Alamat"
+                            fullWidth
+                            multiline
+                            rows={2}
+                            value={formValues.alamat}
+                            onChange={handleFormValueChange('alamat')}
+                        />
+                    </Grid>
                 </>
               )}
 
               {/* --- BAGIAN 3: KEAMANAN (Password) --- */}
-              <Grid size={{ xs: 12 }} sx={{ mt: 2 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', display: 'block', mb: 1 }}>
-                  {isEditMode ? 'KEAMANAN (Kosongkan jika tidak ingin mengubah password)' : 'KEAMANAN (Password wajib diisi)'}
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
+              <Grid item xs={12} sx={{ mt: 2 }}>
+                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', display: 'block', mb: 1 }}>
+                   {isEditMode ? 'KEAMANAN (Kosongkan jika tidak ingin mengubah password)' : 'KEAMANAN (Password wajib diisi)'}
+                 </Typography>
+                 <Divider sx={{ mb: 2 }} />
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid item size={{ xs: 12, sm: 6 }}>
                 <TextField
                   name="password"
                   label="Password"
@@ -564,7 +571,7 @@ const HalamanManajemenPengguna = () => {
                 />
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid item size={{ xs: 12, sm: 6 }}>
                 <TextField
                   name="konfirmasiPassword"
                   label="Konfirmasi Password"
@@ -574,22 +581,17 @@ const HalamanManajemenPengguna = () => {
                   value={formValues.konfirmasiPassword}
                   onChange={handleFormValueChange('konfirmasiPassword')}
                   error={formValues.password !== formValues.konfirmasiPassword && formValues.konfirmasiPassword !== ''}
-                  helperText={
-                    formValues.password !== formValues.konfirmasiPassword && formValues.konfirmasiPassword !== ''
-                      ? 'Password tidak cocok'
-                      : ''
-                  }
+                  helperText={formValues.password !== formValues.konfirmasiPassword && formValues.konfirmasiPassword !== '' ? "Password tidak cocok" : ""}
                 />
               </Grid>
+
             </Grid>
           </DialogContent>
 
           <DialogActions sx={{ p: 2 }}>
-            <Button onClick={handleCloseForm} variant="outlined">
-              Batal
-            </Button>
+            <Button onClick={handleCloseForm} variant="outlined">Batal</Button>
             <Button type="submit" variant="contained" disabled={loading}>
-              {loading ? <CircularProgress size={24} /> : isEditMode ? 'Simpan Perubahan' : 'Simpan'}
+                {loading ? <CircularProgress size={24} /> : (isEditMode ? 'Simpan Perubahan' : 'Simpan')}
             </Button>
           </DialogActions>
         </Box>
@@ -600,8 +602,7 @@ const HalamanManajemenPengguna = () => {
         <DialogTitle>Konfirmasi Perubahan Status</DialogTitle>
         <DialogContent>
           <Typography>
-            Apakah Anda yakin ingin <strong>{selectedUser?.status === 'Aktif' ? 'MENONAKTIFKAN' : 'MENGAKTIFKAN'}</strong> pengguna{' '}
-            <strong>{selectedUser?.username}</strong>?
+            Apakah Anda yakin ingin <strong>{selectedUser?.status === 'Aktif' ? 'MENONAKTIFKAN' : 'MENGAKTIFKAN'}</strong> pengguna <strong>{selectedUser?.username}</strong>?
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -613,12 +614,7 @@ const HalamanManajemenPengguna = () => {
       </Dialog>
 
       {/* SNACKBAR */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
+      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
         <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
           {snackbar.message}
         </Alert>

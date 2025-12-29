@@ -700,7 +700,7 @@ const HalamanNilaiSiswa = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid size={{ xs: 12, sm: 3, md: 2 }}>
+          <Grid size={{ xs: 6, sm: 3, md: 2 }}>
             {currentUser?.role === 'Guru' && kelasOptions.length === 1 ? (
               <TextField
                 label="Kelas Perwalian"
@@ -725,7 +725,7 @@ const HalamanNilaiSiswa = () => {
             )}
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 3, md: 2.5 }}>
+          <Grid size={{ xs: 6, sm: 3, md: 2.5 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Mata Pelajaran</InputLabel>
               <Select value={selectedMapel} onChange={(e) => setSelectedMapel(e.target.value)} label="Mata Pelajaran">
@@ -756,7 +756,9 @@ const HalamanNilaiSiswa = () => {
                 onChange={(e, val) => setTabValue(val)}
                 indicatorColor="primary"
                 textColor="primary"
-                variant="fullWidth"
+                variant="scrollable"
+                scrollButtons="auto"
+                allowScrollButtonsMobile
               >
                 <Tab icon={<AssignmentIcon />} label="Nilai Harian" iconPosition="start" />
                 <Tab icon={<AssessmentIcon />} label="Pengetahuan (KI-3)" iconPosition="start" />

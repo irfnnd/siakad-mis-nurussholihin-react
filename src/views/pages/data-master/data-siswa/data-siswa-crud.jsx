@@ -391,25 +391,6 @@ const SiswaCRUD = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid size={{ xs: 6, sm: 6, md: 1.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<FilterListIcon />}
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedKelas('Semua');
-                  setSelectedStatus('Semua');
-                }}
-              >
-                Reset
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 6, sm: 6, md: 1.6 }}>
-              <Button fullWidth variant="outlined" startIcon={<DownloadIcon />}>
-                Export
-              </Button>
-            </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 1.8 }}>
               <Button fullWidth variant="contained" startIcon={<AddIcon />} onClick={handleClickAdd}>
                 Tambah

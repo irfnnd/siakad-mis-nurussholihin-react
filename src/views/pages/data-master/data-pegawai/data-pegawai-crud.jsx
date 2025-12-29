@@ -312,26 +312,6 @@ const PegawaiCRUD = () => {
               </Select>
             </FormControl>
           </Grid>
-
-          <Grid size={{xs: 6, md: 1.4}}>
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<FilterListIcon />}
-              onClick={() => {
-                setSearchTerm('');
-                setSelectedJabatan('Semua');
-                setSelectedStatus('Semua');
-              }}
-            >
-              Reset
-            </Button>
-          </Grid>
-          <Grid size={{ xs: 6, md: 1.5 }}>
-            <Button fullWidth variant="outlined" startIcon={<DownloadIcon />}>
-              Export
-            </Button>
-          </Grid>
           <Grid size={{ xs: 12, md: 1.6 }} >
             <Button fullWidth variant="contained" startIcon={<AddIcon />} onClick={handleClickAdd}>
               Tambah
@@ -396,47 +376,22 @@ const PegawaiCRUD = () => {
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <FormControl fullWidth required>
-                  <InputLabel>Agama</InputLabel>
-                  <Select name="agama" label="Agama" defaultValue={selectedPegawai?.agama || ''}>
-                    <MenuItem value="Islam">Islam</MenuItem>
-                    <MenuItem value="Kristen">Kristen</MenuItem>
-                    <MenuItem value="Katolik">Katolik</MenuItem>
-                    <MenuItem value="Hindu">Hindu</MenuItem>
-                    <MenuItem value="Buddha">Buddha</MenuItem>
-                    <MenuItem value="Konghucu">Konghucu</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
               <Grid size={{xs:12, sm:6, md:4}}>
                 <TextField name="email" label="Email" type="email" defaultValue={selectedPegawai?.email || ''} fullWidth required />
               </Grid>
               <Grid size={{xs:12, sm:6, md:4}}>
                 <TextField name="telepon" label="Telepon" defaultValue={selectedPegawai?.telepon || ''} fullWidth required />
               </Grid>
-              <Grid size={{ xs: 7, md: 4 }}>
-                <TextField
-                  name="tanggalMasuk"
-                  label="Tanggal Masuk"
-                  type="date"
-                  defaultValue={selectedPegawai?.tanggalMasuk ? selectedPegawai.tanggalMasuk.split('T')[0] : ''}
-                  fullWidth
-                  required
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
               <Grid size={{ xs: 5, md: 4 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Status</InputLabel>
                   <Select name="status" label="Status" defaultValue={selectedPegawai?.status || 'Aktif'}>
                     <MenuItem value="Aktif">Aktif</MenuItem>
-                    <MenuItem value="Cuti">Cuti</MenuItem>
                     <MenuItem value="Nonaktif">Nonaktif</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid size={{xs:12, sm:12, md:8}}>
+              <Grid size={{xs:12, sm:12, md:4}}>
                 <TextField name="alamat" label="Alamat" defaultValue={selectedPegawai?.alamat || ''} fullWidth multiline rows={3} />
               </Grid>
             </Grid>
@@ -489,6 +444,20 @@ const PegawaiCRUD = () => {
                     Telepon
                   </Typography>
                   <Typography>{selectedPegawai.telepon}</Typography>
+                </Grid>
+                <Grid size={{xs:6, sm:4, md:6}}>
+                  <Typography variant="body2" color="text.secondary">
+                    Jenis Kelamin
+                  </Typography>
+                  <Typography>{selectedPegawai.jenisKelamin}</Typography>
+                </Grid>
+                <Grid size={{xs:6, sm:4, md:6}}>
+                  <Typography variant="body2" color="text.secondary">
+                    Tanggal Lahir
+                  </Typography>
+                  <Typography>{selectedPegawai.tanggalLahir ? new Date(selectedPegawai.tanggalLahir).toLocaleDateString() : '-'}</Typography>
+                </Grid>
+                <Grid size={{xs:6, sm:4, md:6}}>
                 </Grid>
                 <Grid item xs={12}>
                   <Typography variant="body2" color="text.secondary">

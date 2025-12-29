@@ -52,7 +52,6 @@ import api from '../../../../services/api';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-
 // Komponen TabPanel
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -185,7 +184,6 @@ const HalamanRaporSiswa = () => {
     }
   };
 
-  
   // === 3. FETCH DETAIL RAPOR SISWA ===
   const handleSelectStudent = async (studentId) => {
     setSelectedStudentId(studentId);
@@ -264,8 +262,10 @@ const HalamanRaporSiswa = () => {
             mapel: nm.mapel?.nama_mapel || nm.mata_pelajaran?.nama_mapel || 'Mapel Tidak Diketahui',
             nilai: nm.nilai_pengetahuan,
             predikat: nm.predikat_pengetahuan,
+            deskripsi_pengetahuan: nm.deskripsi_pengetahuan || '-',
             nilai_k: nm.nilai_keterampilan,
-            predikat_k: nm.predikat_keterampilan
+            predikat_k: nm.predikat_keterampilan,
+            deskripsi_keterampilan: nm.deskripsi_keterampilan || '-'
           })),
           nonAcademic: {
             attendance: { sakit, izin, alpha },
@@ -383,7 +383,7 @@ const HalamanRaporSiswa = () => {
     }
   };
 
-    // === FUNGSI CETAK PDF ===
+  // === FUNGSI CETAK PDF ===
   const handleCetakPDF = () => {
     if (!reportData) return;
 
@@ -392,13 +392,13 @@ const HalamanRaporSiswa = () => {
     // --- 1. KOP SEKOLAH ---
     doc.setFont('times', 'bold');
     doc.setFontSize(14);
-    doc.text('PEMERINTAH KABUPATEN [NAMA KABUPATEN]', 105, 15, { align: 'center' });
+    doc.text('PEMERINTAH KOTA PADANG', 105, 15, { align: 'center' });
     doc.text('DINAS PENDIDIKAN', 105, 22, { align: 'center' });
     doc.setFontSize(16);
-    doc.text('SD NEGERI CONTOH 01', 105, 30, { align: 'center' });
+    doc.text('Madrasah Ibtidayyah Swasta Nurush Sholihin', 105, 30, { align: 'center' });
     doc.setFont('times', 'normal');
     doc.setFontSize(10);
-    doc.text('Alamat: Jl. Pendidikan No. 123, Kota Padang, Sumatera Barat', 105, 36, { align: 'center' });
+    doc.text('Alamat: Jl. Sungai Bangek, Kota Padang, Sumatera Barat', 105, 36, { align: 'center' });
     doc.line(20, 40, 190, 40); // Garis pemisah
 
     // --- 2. IDENTITAS SISWA ---
@@ -419,12 +419,12 @@ const HalamanRaporSiswa = () => {
     doc.setFont('times', 'bold');
     doc.text('A. SIKAP', 20, 75);
     
-    doc.autoTable({
+    autoTable(doc, {
         startY: 78,
-        head: [['Predikat Sikap Spiritual', 'Predikat Sikap Sosial']],
-        body: [[reportData.nonAcademic.sikap.spiritual, reportData.nonAcademic.sikap.sosial]],
+        head: [['Sikap Spiritual', 'Sikap Sosial']],
+        body: [[reportData.nonAcademic.sikap.sikap_spiritual, reportData.nonAcademic.sikap.sikap_sosial]],
         theme: 'grid',
-        headStyles: { fillColor: [220, 220, 220], textColor: 0, fontStyle: 'bold' },
+        headStyles: { fillColor: [255, 255, 255], textColor: 0, fontStyle: 'bold' },
         styles: { font: 'times', fontSize: 10, halign: 'center' },
     });
 
@@ -432,36 +432,41 @@ const HalamanRaporSiswa = () => {
     doc.setFont('times', 'bold');
     doc.text('B. PENGETAHUAN DAN KETERAMPILAN', 20, doc.lastAutoTable.finalY + 10);
 
+    // Buat data akademik dengan deskripsi
     const academicData = reportData.academic.map((item, index) => [
         index + 1,
         item.mapel,
         item.nilai,
         item.predikat,
+        item.deskripsi_pengetahuan|| '-',
         item.nilai_k,
-        item.predikat_k
+        item.predikat_k,
+        item.deskripsi_keterampilan || '-'
     ]);
 
-    doc.autoTable({
+    autoTable(doc, {
         startY: doc.lastAutoTable.finalY + 13,
         head: [
             [
                 { content: 'No', rowSpan: 2, styles: { valign: 'middle' } },
                 { content: 'Mata Pelajaran', rowSpan: 2, styles: { valign: 'middle' } },
-                { content: 'Pengetahuan', colSpan: 2, styles: { halign: 'center' } },
-                { content: 'Keterampilan', colSpan: 2, styles: { halign: 'center' } },
+                { content: 'Pengetahuan', colSpan: 3, styles: { halign: 'center' } },
+                { content: 'Keterampilan', colSpan: 3, styles: { halign: 'center' } },
             ],
-            ['Nilai', 'Predikat', 'Nilai', 'Predikat']
+            ['Nilai', 'Predikat', 'Deskripsi', 'Nilai', 'Predikat', 'Deskripsi']
         ],
         body: academicData,
         theme: 'grid',
         headStyles: { fillColor: [220, 220, 220], textColor: 0, fontStyle: 'bold' },
-        styles: { font: 'times', fontSize: 10 },
+        styles: { font: 'times', fontSize: 9 },
         columnStyles: {
-            0: { halign: 'center', cellWidth: 10 },
-            2: { halign: 'center' },
-            3: { halign: 'center' },
-            4: { halign: 'center' },
-            5: { halign: 'center' }
+            0: { halign: 'center', cellWidth: 8 },
+            2: { halign: 'center', cellWidth: 12 },
+            3: { halign: 'center', cellWidth: 12 },
+            4: { cellWidth: 40 },
+            5: { halign: 'center', cellWidth: 12 },
+            6: { halign: 'center', cellWidth: 12 },
+            7: { cellWidth: 40 }
         }
     });
 
@@ -478,14 +483,17 @@ const HalamanRaporSiswa = () => {
 
     doc.text('C. EKSTRAKURIKULER', 20, doc.lastAutoTable.finalY + 10);
     
-    doc.autoTable({
+    autoTable(doc, {
         startY: doc.lastAutoTable.finalY + 13,
         head: [['No', 'Kegiatan Ekstrakurikuler', 'Nilai', 'Keterangan']],
         body: ekskulData,
         theme: 'grid',
         headStyles: { fillColor: [220, 220, 220], textColor: 0, fontStyle: 'bold' },
         styles: { font: 'times', fontSize: 10 },
-        columnStyles: { 0: { halign: 'center', cellWidth: 10 }, 2: { halign: 'center' } }
+        columnStyles: { 
+            0: { halign: 'center', cellWidth: 10 }, 
+            2: { halign: 'center', cellWidth: 15 } 
+        }
     });
 
     // --- 6. KETIDAKHADIRAN (TABLE KECIL) ---
@@ -497,13 +505,12 @@ const HalamanRaporSiswa = () => {
 
     doc.text('D. KETIDAKHADIRAN', 20, doc.lastAutoTable.finalY + 10);
     
-    doc.autoTable({
+    autoTable(doc, {
         startY: doc.lastAutoTable.finalY + 13,
         body: absensiBody,
-        theme: 'plain', // Tabel tanpa border penuh, atau gunakan 'grid' jika mau kotak
+        theme: 'grid',
         styles: { font: 'times', fontSize: 10 },
-        columnStyles: { 0: { cellWidth: 40, fontStyle: 'bold' } },
-        tableWidth: 80 // Lebar tabel kecil saja
+        columnStyles: { 0: { cellWidth: 40, fontStyle: 'bold' } }
     });
 
     // --- 7. CATATAN WALI KELAS ---
@@ -518,14 +525,8 @@ const HalamanRaporSiswa = () => {
     doc.text(catatan || '-', 22, finalY + 8, { maxWidth: 165 });
 
     // --- 8. TANDA TANGAN (FOOTER) ---
-    const footerY = finalY + 40; // Beri jarak
+    const footerY = finalY + 40;
     
-    // Cek halaman baru jika tidak muat
-    if (footerY > 250) {
-        doc.addPage();
-        // Reset Y untuk halaman baru
-    }
-
     // Tanggal
     const tanggalCetak = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     doc.text(`Padang, ${tanggalCetak}`, 140, footerY);
@@ -693,8 +694,10 @@ const HalamanRaporSiswa = () => {
                               <TableCell>Mata Pelajaran</TableCell>
                               <TableCell align="center">Nilai (P)</TableCell>
                               <TableCell align="center">Predikat (P)</TableCell>
+                              <TableCell>Deskripsi (P)</TableCell>
                               <TableCell align="center">Nilai (K)</TableCell>
                               <TableCell align="center">Predikat (K)</TableCell>
+                              <TableCell>Deskripsi (K)</TableCell>
                             </TableRow>
                           </TableHead>
                           <TableBody>
@@ -714,6 +717,9 @@ const HalamanRaporSiswa = () => {
                                     variant="outlined"
                                   />
                                 </TableCell>
+                                <TableCell sx={{ fontSize: '0.85rem' }}>
+                                  {n.deskripsi_pengetahuan || '-'}
+                                </TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 600 }}>
                                   {n.nilai_k || '-'}
                                 </TableCell>
@@ -724,6 +730,9 @@ const HalamanRaporSiswa = () => {
                                     color={n.predikat_k === 'A' ? 'success' : 'default'}
                                     variant="outlined"
                                   />
+                                </TableCell>
+                                <TableCell sx={{ fontSize: '0.85rem' }}>
+                                  {n.deskripsi_keterampilan || '-'}
                                 </TableCell>
                               </TableRow>
                             ))}
