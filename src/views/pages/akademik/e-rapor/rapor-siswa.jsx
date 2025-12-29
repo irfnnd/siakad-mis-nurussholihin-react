@@ -50,8 +50,7 @@ import PsychologyIcon from '@mui/icons-material/Psychology';
 import api from '../../../../services/api';
 
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-
+import autoTable from 'jspdf-autotable'; // <-- Ubah jadi import bernama
 // Komponen TabPanel
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -383,171 +382,234 @@ const HalamanRaporSiswa = () => {
     }
   };
 
-  // === FUNGSI CETAK PDF ===
-  const handleCetakPDF = () => {
-    if (!reportData) return;
 
-    const doc = new jsPDF();
-    
-    // --- 1. KOP SEKOLAH ---
-    doc.setFont('times', 'bold');
-    doc.setFontSize(14);
-    doc.text('PEMERINTAH KOTA PADANG', 105, 15, { align: 'center' });
-    doc.text('DINAS PENDIDIKAN', 105, 22, { align: 'center' });
-    doc.setFontSize(16);
-    doc.text('Madrasah Ibtidayyah Swasta Nurush Sholihin', 105, 30, { align: 'center' });
-    doc.setFont('times', 'normal');
-    doc.setFontSize(10);
-    doc.text('Alamat: Jl. Sungai Bangek, Kota Padang, Sumatera Barat', 105, 36, { align: 'center' });
-    doc.line(20, 40, 190, 40); // Garis pemisah
 
-    // --- 2. IDENTITAS SISWA ---
-    doc.setFontSize(11);
-    doc.text(`Nama Peserta Didik : ${reportData.info.nama}`, 20, 50);
-    doc.text(`NIS / NISN          : ${reportData.info.nis} / ${reportData.info.nisn}`, 20, 56);
-    
-    // Cari nama kelas dari ID
-    const namaKelas = kelasOptions.find(k => k.id === selectedKelas)?.nama_kelas || '-';
-    // Cari nama semester
-    const namaSemester = semesterOptions.find(s => s.id === selectedSemester)?.nama || 'Ganjil';
-    
-    doc.text(`Kelas               : ${namaKelas}`, 130, 50);
-    doc.text(`Semester          : ${namaSemester}`, 130, 56);
-    doc.text(`Tahun Pelajaran : ${selectedTahun}`, 130, 62);
+const handleCetakPDF = () => {
+  if (!reportData) return;
 
-    // --- 3. SIKAP (TABLE) ---
-    doc.setFont('times', 'bold');
-    doc.text('A. SIKAP', 20, 75);
-    
-    autoTable(doc, {
-        startY: 78,
-        head: [['Sikap Spiritual', 'Sikap Sosial']],
-        body: [[reportData.nonAcademic.sikap.sikap_spiritual, reportData.nonAcademic.sikap.sikap_sosial]],
-        theme: 'grid',
-        headStyles: { fillColor: [255, 255, 255], textColor: 0, fontStyle: 'bold' },
-        styles: { font: 'times', fontSize: 10, halign: 'center' },
-    });
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginX = 15;
+  let currentY = 15;
 
-    // --- 4. NILAI AKADEMIK (TABLE) ---
-    doc.setFont('times', 'bold');
-    doc.text('B. PENGETAHUAN DAN KETERAMPILAN', 20, doc.lastAutoTable.finalY + 10);
+  // --- 1. KOP SEKOLAH ---
+  doc.setFont('times', 'bold');
+  doc.setFontSize(14);
+  doc.text('PEMERINTAH KOTA PADANG', pageWidth / 2, currentY, { align: 'center' });
+  currentY += 6;
+  doc.text('DINAS PENDIDIKAN', pageWidth / 2, currentY, { align: 'center' });
+  currentY += 8;
+  doc.setFontSize(16);
+  doc.text('MADRASAH IBTIDAYYAH SWASTA NURUSH SHOLIHIN', pageWidth / 2, currentY, { align: 'center' });
+  currentY += 6;
+  doc.setFont('times', 'normal');
+  doc.setFontSize(10);
+  doc.text('Alamat: Jl. Sungai Bangek, Kota Padang, Sumatera Barat', pageWidth / 2, currentY, { align: 'center' });
+  
+  // Garis Pemisah
+  currentY += 4;
+  doc.setLineWidth(1);
+  doc.line(marginX, currentY, pageWidth - marginX, currentY); 
+  doc.setLineWidth(0.5);
+  doc.line(marginX, currentY + 1, pageWidth - marginX, currentY + 1); 
 
-    // Buat data akademik dengan deskripsi
-    const academicData = reportData.academic.map((item, index) => [
-        index + 1,
-        item.mapel,
-        item.nilai,
-        item.predikat,
-        item.deskripsi_pengetahuan|| '-',
-        item.nilai_k,
-        item.predikat_k,
-        item.deskripsi_keterampilan || '-'
-    ]);
+  // --- 2. IDENTITAS SISWA ---
+  currentY += 10;
+  doc.setFontSize(11);
+  
+  const namaKelas = kelasOptions.find(k => k.id === selectedKelas)?.nama_kelas || '-';
+  const namaSemester = semesterOptions.find(s => s.id === selectedSemester)?.nama || 'Ganjil';
 
-    autoTable(doc, {
-        startY: doc.lastAutoTable.finalY + 13,
-        head: [
-            [
-                { content: 'No', rowSpan: 2, styles: { valign: 'middle' } },
-                { content: 'Mata Pelajaran', rowSpan: 2, styles: { valign: 'middle' } },
-                { content: 'Pengetahuan', colSpan: 3, styles: { halign: 'center' } },
-                { content: 'Keterampilan', colSpan: 3, styles: { halign: 'center' } },
-            ],
-            ['Nilai', 'Predikat', 'Deskripsi', 'Nilai', 'Predikat', 'Deskripsi']
-        ],
-        body: academicData,
-        theme: 'grid',
-        headStyles: { fillColor: [220, 220, 220], textColor: 0, fontStyle: 'bold' },
-        styles: { font: 'times', fontSize: 9 },
-        columnStyles: {
-            0: { halign: 'center', cellWidth: 8 },
-            2: { halign: 'center', cellWidth: 12 },
-            3: { halign: 'center', cellWidth: 12 },
-            4: { cellWidth: 40 },
-            5: { halign: 'center', cellWidth: 12 },
-            6: { halign: 'center', cellWidth: 12 },
-            7: { cellWidth: 40 }
-        }
-    });
-
-    // --- 5. EKSTRAKURIKULER (TABLE) ---
-    const ekskulData = reportData.nonAcademic.extracurricular.map((ek, index) => [
-        index + 1,
-        ek.nama,
-        ek.nilai,
-        ek.deskripsi
-    ]);
-    
-    // Jika kosong, tambah baris kosong
-    if (ekskulData.length === 0) ekskulData.push(['-', '-', '-', '-']);
-
-    doc.text('C. EKSTRAKURIKULER', 20, doc.lastAutoTable.finalY + 10);
-    
-    autoTable(doc, {
-        startY: doc.lastAutoTable.finalY + 13,
-        head: [['No', 'Kegiatan Ekstrakurikuler', 'Nilai', 'Keterangan']],
-        body: ekskulData,
-        theme: 'grid',
-        headStyles: { fillColor: [220, 220, 220], textColor: 0, fontStyle: 'bold' },
-        styles: { font: 'times', fontSize: 10 },
-        columnStyles: { 
-            0: { halign: 'center', cellWidth: 10 }, 
-            2: { halign: 'center', cellWidth: 15 } 
-        }
-    });
-
-    // --- 6. KETIDAKHADIRAN (TABLE KECIL) ---
-    const absensiBody = [
-        ['Sakit', `${reportData.nonAcademic.attendance.sakit} hari`],
-        ['Izin', `${reportData.nonAcademic.attendance.izin} hari`],
-        ['Tanpa Keterangan', `${reportData.nonAcademic.attendance.alpha} hari`],
-    ];
-
-    doc.text('D. KETIDAKHADIRAN', 20, doc.lastAutoTable.finalY + 10);
-    
-    autoTable(doc, {
-        startY: doc.lastAutoTable.finalY + 13,
-        body: absensiBody,
-        theme: 'grid',
-        styles: { font: 'times', fontSize: 10 },
-        columnStyles: { 0: { cellWidth: 40, fontStyle: 'bold' } }
-    });
-
-    // --- 7. CATATAN WALI KELAS ---
-    const finalY = doc.lastAutoTable.finalY + 10;
-    doc.setFont('times', 'bold');
-    doc.text('E. CATATAN WALI KELAS', 20, finalY);
-    
-    doc.setFont('times', 'normal');
-    doc.setFontSize(10);
-    // Kotak catatan
-    doc.rect(20, finalY + 3, 170, 20); 
-    doc.text(catatan || '-', 22, finalY + 8, { maxWidth: 165 });
-
-    // --- 8. TANDA TANGAN (FOOTER) ---
-    const footerY = finalY + 40;
-    
-    // Tanggal
-    const tanggalCetak = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    doc.text(`Padang, ${tanggalCetak}`, 140, footerY);
-
-    doc.text('Mengetahui,', 20, footerY + 10);
-    doc.text('Orang Tua/Wali,', 20, footerY + 15);
-    
-    doc.text('Wali Kelas,', 140, footerY + 15);
-
-    doc.text('Mengetahui,', 85, footerY + 40);
-    doc.text('Kepala Sekolah,', 85, footerY + 45);
-
-    // Nama (Titik-titik)
-    doc.text('( ..................................... )', 20, footerY + 35);
-    doc.text(`( ${currentUser?.pegawai?.nama_lengkap || '.....................................'} )`, 140, footerY + 35);
-    doc.text('( ..................................... )', 85, footerY + 65);
-    doc.text('NIP. ...........................', 85, footerY + 70);
-
-    // Simpan PDF
-    doc.save(`Rapor_${reportData.info.nama}_${selectedSemester}.pdf`);
+  const printIdentity = (label1, val1, label2, val2, y) => {
+    doc.text(label1, marginX, y);
+    doc.text(':', marginX + 35, y); 
+    doc.text(val1, marginX + 38, y);
+    if (label2) {
+      const leftCol2 = 120;
+      doc.text(label2, leftCol2, y);
+      doc.text(':', leftCol2 + 30, y);
+      doc.text(val2, leftCol2 + 33, y);
+    }
   };
+
+  printIdentity('Nama Peserta Didik', reportData.info.nama, 'Kelas', namaKelas, currentY);
+  currentY += 6;
+  printIdentity('NIS / NISN', `${reportData.info.nis} / ${reportData.info.nisn}`, 'Semester', namaSemester, currentY);
+  currentY += 6;
+  printIdentity('', '', 'Tahun Pelajaran', selectedTahun, currentY);
+
+  // --- 3. SIKAP (TABLE) ---
+  currentY += 12;
+  doc.setFont('times', 'bold');
+  doc.text('A. SIKAP', marginX, currentY);
+  
+  // PERBAIKAN: Gunakan autoTable(doc, options)
+  autoTable(doc, {
+    startY: currentY + 2,
+    head: [['Sikap Spiritual', 'Sikap Sosial']],
+    body: [[
+      reportData.nonAcademic?.sikap?.sikap_spiritual || '-', 
+      reportData.nonAcademic?.sikap?.sikap_sosial || '-'
+    ]],
+    theme: 'grid',
+    headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: 0.1, lineColor: [0, 0, 0], font: 'times', fontStyle: 'bold', halign: 'center' },
+    styles: { font: 'times', fontSize: 10, cellPadding: 3, lineColor: [0, 0, 0], lineWidth: 0.1 },
+    margin: { left: marginX, right: marginX }
+  });
+
+  // --- 4. NILAI AKADEMIK (TABLE) ---
+  // Kita ambil posisi Y terakhir dari tabel sebelumnya
+  currentY = doc.lastAutoTable.finalY + 10; 
+  doc.setFont('times', 'bold');
+  doc.text('B. PENGETAHUAN DAN KETERAMPILAN', marginX, currentY);
+
+  const academicData = reportData.academic.map((item, index) => [
+    index + 1,
+    item.mapel,
+    item.nilai,
+    item.predikat,
+    item.deskripsi_pengetahuan || '-',
+    item.nilai_k,
+    item.predikat_k,
+    item.deskripsi_keterampilan || '-'
+  ]);
+
+  // PERBAIKAN: Gunakan autoTable(doc, options)
+  autoTable(doc, {
+    startY: currentY + 3,
+    head: [
+      [
+        { content: 'No', rowSpan: 2, styles: { valign: 'middle' } },
+        { content: 'Mata Pelajaran', rowSpan: 2, styles: { valign: 'middle' } },
+        { content: 'Pengetahuan', colSpan: 3, styles: { halign: 'center' } },
+        { content: 'Keterampilan', colSpan: 3, styles: { halign: 'center' } },
+      ],
+      ['Nilai', 'Predikat', 'Deskripsi', 'Nilai', 'Predikat', 'Deskripsi']
+    ],
+    body: academicData,
+    theme: 'grid',
+    headStyles: { fillColor: [230, 230, 230], textColor: 0, fontStyle: 'bold', lineWidth: 0.1, lineColor: 0 },
+    styles: { font: 'times', fontSize: 9, cellPadding: 2, lineColor: 0, lineWidth: 0.1 },
+    columnStyles: {
+      0: { halign: 'center', cellWidth: 8 },
+      2: { halign: 'center', cellWidth: 10 },
+      3: { halign: 'center', cellWidth: 10 },
+      4: { cellWidth: 'auto' },
+      5: { halign: 'center', cellWidth: 10 },
+      6: { halign: 'center', cellWidth: 10 },
+      7: { cellWidth: 'auto' }
+    },
+    margin: { left: marginX, right: marginX }
+  });
+
+  // --- 5. EKSTRAKURIKULER ---
+  currentY = doc.lastAutoTable.finalY + 10;
+  
+  if (currentY > pageHeight - 40) {
+     doc.addPage();
+     currentY = 20;
+  }
+
+  doc.setFont('times', 'bold');
+  doc.text('C. EKSTRAKURIKULER', marginX, currentY);
+
+  const ekskulData = reportData.nonAcademic?.extracurricular?.map((ek, index) => [
+    index + 1, ek.nama, ek.nilai, ek.deskripsi
+  ]) || [];
+
+  if (ekskulData.length === 0) ekskulData.push(['-', '-', '-', '-']);
+
+  // PERBAIKAN: Gunakan autoTable(doc, options)
+  autoTable(doc, {
+    startY: currentY + 3,
+    head: [['No', 'Kegiatan Ekstrakurikuler', 'Nilai', 'Keterangan']],
+    body: ekskulData,
+    theme: 'grid',
+    headStyles: { fillColor: [230, 230, 230], textColor: 0, fontStyle: 'bold', lineWidth: 0.1, lineColor: 0 },
+    styles: { font: 'times', fontSize: 10, lineColor: 0, lineWidth: 0.1 },
+    columnStyles: { 0: { halign: 'center', cellWidth: 10 }, 2: { halign: 'center', cellWidth: 15 } },
+    margin: { left: marginX, right: marginX }
+  });
+
+  // --- 6. KETIDAKHADIRAN ---
+  currentY = doc.lastAutoTable.finalY + 10;
+  
+  if (currentY > pageHeight - 50) {
+      doc.addPage();
+      currentY = 20;
+  }
+
+  doc.text('D. KETIDAKHADIRAN', marginX, currentY);
+  
+  const absensi = reportData.nonAcademic?.attendance || { sakit: 0, izin: 0, alpha: 0 };
+  
+  // PERBAIKAN: Gunakan autoTable(doc, options)
+  autoTable(doc, {
+    startY: currentY + 3,
+    body: [
+      ['Sakit', `${absensi.sakit} hari`],
+      ['Izin', `${absensi.izin} hari`],
+      ['Tanpa Keterangan', `${absensi.alpha} hari`],
+    ],
+    theme: 'grid',
+    styles: { font: 'times', fontSize: 10, lineColor: 0, lineWidth: 0.1 },
+    columnStyles: { 0: { cellWidth: 50, fontStyle: 'bold' } },
+    margin: { left: marginX }
+  });
+
+  // --- 7. CATATAN WALI KELAS ---
+  currentY = doc.lastAutoTable.finalY + 10;
+  
+  if (currentY > pageHeight - 40) {
+      doc.addPage();
+      currentY = 20;
+  }
+
+  doc.setFont('times', 'bold');
+  doc.text('E. CATATAN WALI KELAS', marginX, currentY);
+  
+  doc.setFont('times', 'normal');
+  doc.rect(marginX, currentY + 3, pageWidth - (marginX * 2), 20); 
+  doc.text(catatan || 'Tetap semangat belajar dan tingkatkan prestasimu.', marginX + 2, currentY + 8, { maxWidth: pageWidth - (marginX * 2) - 4 });
+
+  // --- 8. TANDA TANGAN ---
+  currentY = currentY + 35; 
+
+  if (pageHeight - currentY < 60) {
+      doc.addPage();
+      currentY = 30;
+  }
+
+  const tanggalCetak = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  
+  const leftSignX = marginX + 10;
+  const centerSignX = pageWidth / 2;
+  const rightSignX = pageWidth - marginX - 40;
+
+  doc.setFontSize(10);
+  
+  doc.text(`Padang, ${tanggalCetak}`, rightSignX, currentY);
+  doc.text('Wali Kelas,', rightSignX, currentY + 6);
+  
+  doc.text('Mengetahui,', leftSignX, currentY);
+  doc.text('Orang Tua/Wali,', leftSignX, currentY + 6);
+
+  currentY += 25;
+
+  doc.text('( ..................................... )', leftSignX, currentY);
+  doc.text(`( ${currentUser?.pegawai?.nama_lengkap || '.....................................'} )`, rightSignX, currentY);
+
+  currentY += 10;
+  doc.text('Mengetahui,', centerSignX, currentY, { align: 'center' });
+  doc.text('Kepala Sekolah,', centerSignX, currentY + 6, { align: 'center' });
+  
+  currentY += 25;
+  doc.text('( ..................................... )', centerSignX, currentY, { align: 'center' });
+  doc.text('NIP. ...........................', centerSignX, currentY + 5, { align: 'center' });
+
+  doc.save(`Rapor_${reportData.info.nama}_${namaSemester}.pdf`);
+};
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === 'clickaway') return;
