@@ -391,7 +391,7 @@ const HalamanNilaiSiswa = () => {
       // Kirim ke Backend (Endpoint Batch Update Nilai Rapor)
       // Kita gunakan endpoint /nilai-rapor/batch jika sudah dibuat, atau loop manual
       // Asumsi backend punya: POST /nilai-rapor/batch
-      await api.post('/nilairapor/batch', {
+      await api.post('/rapor/batch', {
         pengajaran_id: pengajaranId,
         // Info konteks untuk membuat Rapor Induk jika belum ada
         kelas_id: selectedKelas,
