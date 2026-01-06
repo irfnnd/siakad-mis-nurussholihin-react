@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Base URL backend API - sesuaikan dengan URL backend Anda
-const API_BASE_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000/api/';
+const API_BASE_URL = import.meta.env.VITE_APP_API_URL || 'https://siakad-misns-api.up.railway.app';
 
 // Create axios instance
 console.log('API Base URL:', API_BASE_URL); 
