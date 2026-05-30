@@ -739,7 +739,7 @@ const HalamanNilaiSiswa = () => {
       {/* HEADER & FILTER */}
       <Card sx={{ mb: 1, p: 2 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={6} sm={3}>
+          <Grid sx={{xs: 6, sm: 3}}>
             <FormControl fullWidth size="small">
               <InputLabel>Tahun Ajaran</InputLabel>
               <Select value={selectedTahun} onChange={(e) => setSelectedTahun(e.target.value)} label="Tahun Ajaran">
@@ -747,7 +747,7 @@ const HalamanNilaiSiswa = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid sx={{xs: 6, sm: 3}}>
             <FormControl fullWidth size="small">
               <InputLabel>Semester</InputLabel>
               <Select value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value)} label="Semester">
@@ -755,7 +755,7 @@ const HalamanNilaiSiswa = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={3}>
+          <Grid sx={{xs: 6, sm: 3}}>
             <FormControl fullWidth size="small">
                 <InputLabel>Pilih Kelas</InputLabel>
                 <Select value={selectedKelas} label="Pilih Kelas" onChange={(e) => setSelectedKelas(e.target.value)}>
@@ -763,7 +763,7 @@ const HalamanNilaiSiswa = () => {
                 </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={3}>
+          <Grid sx={{xs: 6, sm: 3}}>
             <FormControl fullWidth size="small">
               <InputLabel>Mata Pelajaran</InputLabel>
               <Select value={selectedMapel} onChange={(e) => setSelectedMapel(e.target.value)} label="Mata Pelajaran">
@@ -771,7 +771,7 @@ const HalamanNilaiSiswa = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Grid sx={{xs: 12, sm: 3, display: 'flex', justifyContent: 'flex-end' }}>
             <Button variant="contained" startIcon={<PageviewIcon />} onClick={handleTampilkan} disabled={loading}>
               {loading ? '...' : 'Tampilkan'}
             </Button>
